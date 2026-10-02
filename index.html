@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="sv" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASR Bilservice - Digital Servicebok</title>
+  <!-- Tailwind CSS & FontAwesome Icons & QR Code Lib -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    [dir="rtl"] body { font-family: 'Cairo', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 sticky top-0 z-50 backdrop-blur">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg border border-amber-500/30">
+          <i class="fa-solid fa-oil-can"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">ASR Bilservice</h1>
+          <p class="text-xs text-slate-400" id="txt-subbrand">Digital Servicebok</p>
+        </div>
+      </div>
+      
+      <!-- Language Switcher -->
+      <div class="flex items-center bg-slate-800 rounded-lg p-1 text-xs border border-slate-700">
+        <button onclick="setLanguage('sv')" id="btn-sv" class="px-2 py-1 rounded bg-amber-500 text-slate-950 font-bold">SV</button>
+        <button onclick="setLanguage('en')" id="btn-en" class="px-2 py-1 rounded text-slate-300">EN</button>
+        <button onclick="setLanguage('ar')" id="btn-ar" class="px-2 py-1 rounded text-slate-300">عربي</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
+    
+    <!-- View 1: Customer Card View (Appears if ?reg=ABC123 in URL) -->
+    <div id="customer-view" class="hidden space-y-6">
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-700">
+          <div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" id="txt-active-record">Verifierad Service</span>
+            <h2 id="cust-reg" class="text-3xl font-black mt-2 tracking-wider uppercase text-amber-400">---</h2>
+            <p id="cust-car" class="text-slate-400 text-sm mt-0.5">Bilmodell</p>
+          </div>
+          <div class="text-right sm:text-right">
+            <span class="text-xs text-slate-400 block" id="txt-mileage-lbl">Senaste mätarställning</span>
+            <span id="cust-mileage" class="text-2xl font-bold text-white">0 km</span>
+          </div>
+        </div>
+
+        <!-- Next Service Alert -->
+        <div class="mt-6 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-500 p-4 rounded-r-xl">
+          <h3 class="font-bold text-amber-400 text-sm" id="txt-next-header"><i class="fa-regular fa-bell mr-2"></i> Nästa Rekommenderade Service</h3>
+          <div class="grid grid-cols-2 gap-4 mt-2 text-sm">
+            <div>
+              <span class="text-slate-400 text-xs block" id="txt-next-km-lbl">Vid mätarställning:</span>
+              <strong id="cust-next-km" class="text-slate-200">-- km</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 text-xs block" id="txt-next-date-lbl">Eller senast:</span>
+              <strong id="cust-next-date" class="text-slate-200">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service Details -->
+        <div class="mt-6">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3" id="txt-serv-done">Utförda åtgärder</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" id="cust-details-list">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Workshop Contact -->
+        <div class="mt-8 pt-6 border-t border-slate-700 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="font-bold text-slate-200">ASR Bilservice</div>
+            <a href="https://www.asrbilservice.se" target="_blank" class="text-xs text-amber-400 hover:underline">www.asrbilservice.se</a>
+          </div>
+          <a href="tel:+46700000000" id="btn-call" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-medium text-xs flex items-center gap-2">
+            <i class="fa-solid fa-phone"></i> <span id="txt-call-shop">Kontakta Verkstaden</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 2: Workshop Admin Dashboard -->
+    <div id="admin-view" class="space-y-6">
+      
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold" id="txt-dash-title">Registrera Ny Service</h2>
+          <p class="text-xs text-slate-400" id="txt-dash-desc">Skapa digitalt servicekort och generera QR-kod</p>
+        </div>
+      </div>
+
+      <!-- Service Form -->
+      <form id="service-form" onsubmit="handleSaveService(event)" class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-reg">Registreringsnummer *</label>
+            <input type="text" id="in-reg" required placeholder="t.ex. ABC 123" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 uppercase font-mono tracking-wider" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-mileage">Mätarställning (km) *</label>
+            <input type="number" id="in-mileage" required placeholder="t.ex. 145000" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-make">Bilmärke & Modell</label>
+            <input type="text" id="in-make" placeholder="t.ex. Toyota Corolla" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-oil-type">Oljetyp / Viskositet</label>
+            <input type="text" id="in-oil-type" placeholder="t.ex. 5W-30 Syntet" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-oil-brand">Oljemärke / Mängd</label>
+            <input type="text" id="in-oil-brand" placeholder="t.ex. Castrol 4.2L" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+
+        <!-- Filter Checkboxes -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2" id="lbl-filters">Utbytta filter</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="chk-oil-filter" checked class="accent-amber-500 w-4 h-4">
+              <span id="txt-chk-oil">Oljefilter</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="chk-air-filter" class="accent-amber-500 w-4 h-4">
+              <span id="txt-chk-air">Luftfilter</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="chk-cabin-filter" class="accent-amber-500 w-4 h-4">
+              <span id="txt-chk-cabin">Kupéfilter</span>
+            </label>
+            <label class="flex items-center gap-2 p-2.5 rounded-lg bg-slate-900/60 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="chk-fuel-filter" class="accent-amber-500 w-4 h-4">
+              <span id="txt-chk-fuel">Bränslefilter</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Next Service Calculations -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-next-km">Nästa service vid mätarställning (km)</label>
+            <input type="number" id="in-next-km" placeholder="t.ex. 160000" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-next-date">Nästa service senast datum</label>
+            <input type="date" id="in-next-date" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 text-slate-300" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-notes">Övriga reparationer & Verkstadsanteckningar</label>
+          <textarea id="in-notes" rows="2" placeholder="t.ex. Kontroll av bromsar, påfyllning av spolarvätska..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 text-sm"></textarea>
+        </div>
+
+        <button type="submit" id="btn-save" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 font-bold text-slate-950 transition-all shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-btn">Spara & Generera QR-kod</span>
+        </button>
+      </form>
+
+      <!-- QR Code Modal / Result Box -->
+      <div id="qr-result-box" class="hidden bg-slate-800 border border-amber-500/40 rounded-2xl p-6 text-center space-y-4">
+        <h3 class="font-bold text-amber-400 text-lg" id="txt-qr-ready">Servicekortet är klart!</h3>
+        <p class="text-xs text-slate-400" id="txt-qr-instruction">Kunden kan scanna koden eller öppna länken för att se sin digitala servicebok.</p>
+        
+        <div class="inline-block p-4 bg-white rounded-xl shadow-md mx-auto" id="qrcode"></div>
+
+        <div>
+          <input type="text" id="share-link-input" readonly class="w-full max-w-md px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-center font-mono text-amber-400" />
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-print"></i> <span id="txt-print-btn">Skriv ut QR</span>
+          </button>
+          <a id="preview-link-btn" href="#" target="_blank" class="px-4 py-2 rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 text-xs font-bold flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span id="txt-preview-btn">Öppna kundvy</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // 1. Supabase Initialization
+    const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_XiOUO8haa_Ko7LYrj30vaw_AsxLztP2";
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. Multilingual Translations Dictionary
+    const i18n = {
+      sv: {
+        dir: "ltr",
+        subbrand: "Digital Servicebok",
+        activeRecord: "Verifierad Service",
+        mileageLbl: "Senaste mätarställning",
+        nextHeader: "Nästa Rekommenderade Service",
+        nextKmLbl: "Vid mätarställning:",
+        nextDateLbl: "Eller senast:",
+        servDone: "Utförda åtgärder & material",
+        callShop: "Kontakta Verkstaden",
+        dashTitle: "Registrera Ny Service",
+        dashDesc: "Skapa digitalt servicekort och generera QR-kod",
+        lblReg: "Registreringsnummer *",
+        lblMileage: "Mätarställning (km) *",
+        lblMake: "Bilmärke & Modell",
+        lblOilType: "Oljetyp / Viskositet",
+        lblOilBrand: "Oljemärke / Mängd",
+        lblFilters: "Utbytta filter",
+        chkOil: "Oljefilter",
+        chkAir: "Luftfilter",
+        chkCabin: "Kupéfilter",
+        chkFuel: "Bränslefilter",
+        lblNextKm: "Nästa service vid mätarställning (km)",
+        lblNextDate: "Nästa service senast datum",
+        lblNotes: "Övriga reparationer & Verkstadsanteckningar",
+        saveBtn: "Spara & Generera QR-kod",
+        qrReady: "Servicekortet är klart!",
+        qrInstruction: "Kunden kan scanna koden eller öppna länken för att se sin digitala servicebok.",
+        printBtn: "Skriv ut QR",
+        previewBtn: "Öppna kundvy"
+      },
+      en: {
+        dir: "ltr",
+        subbrand: "Digital Service Record",
+        activeRecord: "Verified Service",
+        mileageLbl: "Latest Mileage",
+        nextHeader: "Next Recommended Service",
+        nextKmLbl: "At mileage:",
+        nextDateLbl: "Or due date:",
+        servDone: "Completed Services & Parts",
+        callShop: "Contact Workshop",
+        dashTitle: "Register New Service",
+        dashDesc: "Create digital service card and generate QR code",
+        lblReg: "License Plate Number *",
+        lblMileage: "Current Mileage (km) *",
+        lblMake: "Car Make & Model",
+        lblOilType: "Oil Type / Viscosity",
+        lblOilBrand: "Oil Brand / Capacity",
+        lblFilters: "Replaced Filters",
+        chkOil: "Oil Filter",
+        chkAir: "Air Filter",
+        chkCabin: "Cabin Filter",
+        chkFuel: "Fuel Filter",
+        lblNextKm: "Next service at mileage (km)",
+        lblNextDate: "Next service due date",
+        lblNotes: "Additional repairs & Workshop notes",
+        saveBtn: "Save & Generate QR Code",
+        qrReady: "Service Record Ready!",
+        qrInstruction: "The customer can scan the QR code or use the link to view their digital record.",
+        printBtn: "Print QR",
+        previewBtn: "Open Client View"
+      },
+      ar: {
+        dir: "rtl",
+        subbrand: "دفتر الصيانة الرقمي",
+        activeRecord: "صيانة معتمدة وموثقة",
+        mileageLbl: "قراءة العداد الحالية",
+        nextHeader: "موعد الصيانة القادمة الموصى بها",
+        nextKmLbl: "عند بلوغ العداد:",
+        nextDateLbl: "أو بحلول تاريخ:",
+        servDone: "الأعمال والقطع المنجزة",
+        callShop: "الاتصال بالورشة",
+        dashTitle: "تسجيل صيانة جديدة",
+        dashDesc: "إنشاء كارت صيانة رقمي وتوليد رمز QR",
+        lblReg: "رقم اللوحة *",
+        lblMileage: "قراءة العداد (كم) *",
+        lblMake: "ماركة وموديل السيارة",
+        lblOilType: "نوع ولزوجة الزيت",
+        lblOilBrand: "ماركة الزيت والكمية",
+        lblFilters: "الفلاتر المستبدلة",
+        chkOil: "فلتر زيت",
+        chkAir: "فلتر هواء",
+        chkCabin: "فلتر مكيف",
+        chkFuel: "فلتر وقود",
+        lblNextKm: "الصيانة القادمة عند العداد (كم)",
+        lblNextDate: "تاريخ الصيانة القادمة",
+        lblNotes: "إصلاحات أخرى وملاحظات الفني",
+        saveBtn: "حفظ وتوليد كود QR",
+        qrReady: "تم تجهيز كارت الصيانة بنجاح!",
+        qrInstruction: "يمكن للزبون مسح الرمز أو فتح الرابط لعرض دفتر الصيانة الرقمي فوراً.",
+        printBtn: "طباعة الرمز",
+        previewBtn: "عرض صفحة الزبون"
+      }
+    };
+
+    let currentLang = "sv";
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const dict = i18n[lang];
+      document.documentElement.setAttribute("lang", lang);
+      document.documentElement.setAttribute("dir", dict.dir);
+
+      ["sv", "en", "ar"].forEach(l => {
+        const btn = document.getElementById("btn-" + l);
+        if (btn) {
+          if (l === lang) {
+            btn.className = "px-2 py-1 rounded bg-amber-500 text-slate-950 font-bold";
+          } else {
+            btn.className = "px-2 py-1 rounded text-slate-300";
+          }
+        }
+      });
+
+      document.getElementById("txt-subbrand").innerText = dict.subbrand;
+      document.getElementById("txt-active-record").innerText = dict.activeRecord;
+      document.getElementById("txt-mileage-lbl").innerText = dict.mileageLbl;
+      document.getElementById("txt-next-header").innerHTML = `<i class="fa-regular fa-bell mr-2"></i> ` + dict.nextHeader;
+      document.getElementById("txt-next-km-lbl").innerText = dict.nextKmLbl;
+      document.getElementById("txt-next-date-lbl").innerText = dict.nextDateLbl;
+      document.getElementById("txt-serv-done").innerText = dict.servDone;
+      document.getElementById("txt-call-shop").innerText = dict.callShop;
+
+      document.getElementById("txt-dash-title").innerText = dict.dashTitle;
+      document.getElementById("txt-dash-desc").innerText = dict.dashDesc;
+      document.getElementById("lbl-reg").innerText = dict.lblReg;
+      document.getElementById("lbl-mileage").innerText = dict.lblMileage;
+      document.getElementById("lbl-make").innerText = dict.lblMake;
+      document.getElementById("lbl-oil-type").innerText = dict.lblOilType;
+      document.getElementById("lbl-oil-brand").innerText = dict.lblOilBrand;
+      document.getElementById("lbl-filters").innerText = dict.lblFilters;
+      document.getElementById("txt-chk-oil").innerText = dict.chkOil;
+      document.getElementById("txt-chk-air").innerText = dict.chkAir;
+      document.getElementById("txt-chk-cabin").innerText = dict.chkCabin;
+      document.getElementById("txt-chk-fuel").innerText = dict.chkFuel;
+      document.getElementById("lbl-next-km").innerText = dict.lblNextKm;
+      document.getElementById("lbl-next-date").innerText = dict.lblNextDate;
+      document.getElementById("lbl-notes").innerText = dict.lblNotes;
+      document.getElementById("txt-save-btn").innerText = dict.saveBtn;
+      document.getElementById("txt-qr-ready").innerText = dict.qrReady;
+      document.getElementById("txt-qr-instruction").innerText = dict.qrInstruction;
+      document.getElementById("txt-print-btn").innerText = dict.printBtn;
+      document.getElementById("txt-preview-btn").innerText = dict.previewBtn;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const regParam = urlParams.get("reg");
+
+    if (regParam) {
+      document.getElementById("admin-view").classList.add("hidden");
+      document.getElementById("customer-view").classList.remove("hidden");
+      loadCustomerData(regParam.toUpperCase());
+    }
+
+    async function loadCustomerData(reg) {
+      document.getElementById("cust-reg").innerText = reg;
+      try {
+        const { data: vehicle } = await db.from("vehicles").select("*").eq("reg_number", reg).single();
+        if (vehicle && vehicle.make) {
+          document.getElementById("cust-car").innerText = `${vehicle.make} ${vehicle.model || ''}`;
+        }
+
+        const { data: records } = await db.from("service_records")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (records && records.length > 0) {
+          const rec = records[0];
+          document.getElementById("cust-mileage").innerText = `${rec.mileage_km.toLocaleString()} km`;
+          document.getElementById("cust-next-km").innerText = rec.next_service_km ? `${rec.next_service_km.toLocaleString()} km` : "--";
+          document.getElementById("cust-next-date").innerText = rec.next_service_date || "--";
+
+          const list = document.getElementById("cust-details-list");
+          list.innerHTML = "";
+
+          if (rec.oil_type || rec.oil_brand) {
+            list.innerHTML += `<div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700 flex items-center gap-3">
+              <i class="fa-solid fa-oil-can text-amber-400"></i>
+              <div><strong class="block text-xs text-slate-400">Motorolja</strong>${rec.oil_brand || ''} ${rec.oil_type || ''}</div>
+            </div>`;
+          }
+
+          const filters = [];
+          if (rec.oil_filter_changed) filters.push("Oljefilter");
+          if (rec.air_filter_changed) filters.push("Luftfilter");
+          if (rec.cabin_filter_changed) filters.push("Kupéfilter");
+          if (rec.fuel_filter_changed) filters.push("Bränslefilter");
+
+          if (filters.length > 0) {
+            list.innerHTML += `<div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700 flex items-center gap-3">
+              <i class="fa-solid fa-filter text-amber-400"></i>
+              <div><strong class="block text-xs text-slate-400">Bytta Filter</strong>${filters.join(", ")}</div>
+            </div>`;
+          }
+
+          if (rec.notes) {
+            list.innerHTML += `<div class="p-3 bg-slate-900/60 rounded-xl border border-slate-700 sm:col-span-2">
+              <strong class="block text-xs text-slate-400 mb-1">Anteckningar</strong>
+              <p class="text-xs text-slate-300">${rec.notes}</p>
+            </div>`;
+          }
+        }
+      } catch (err) {
+        console.error("Error loading vehicle record:", err);
+      }
+    }
+
+    async function handleSaveService(e) {
+      e.preventDefault();
+      const reg = document.getElementById("in-reg").value.trim().toUpperCase();
+      const mileage = parseInt(document.getElementById("in-mileage").value);
+      const make = document.getElementById("in-make").value.trim();
+      const oilType = document.getElementById("in-oil-type").value.trim();
+      const oilBrand = document.getElementById("in-oil-brand").value.trim();
+      const nextKm = document.getElementById("in-next-km").value ? parseInt(document.getElementById("in-next-km").value) : null;
+      const nextDate = document.getElementById("in-next-date").value || null;
+      const notes = document.getElementById("in-notes").value.trim();
+
+      const btn = document.getElementById("btn-save");
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sparar...`;
+
+      try {
+        let { data: veh } = await db.from("vehicles").select("id").eq("reg_number", reg).maybeSingle();
+        if (!veh) {
+          const { data: newVeh } = await db.from("vehicles").insert([{ reg_number: reg, make: make }]).select().single();
+          veh = newVeh;
+        }
+
+        await db.from("service_records").insert([{
+          vehicle_id: veh.id,
+          mileage_km: mileage,
+          oil_type: oilType,
+          oil_brand: oilBrand,
+          oil_filter_changed: document.getElementById("chk-oil-filter").checked,
+          air_filter_changed: document.getElementById("chk-air-filter").checked,
+          cabin_filter_changed: document.getElementById("chk-cabin-filter").checked,
+          fuel_filter_changed: document.getElementById("chk-fuel-filter").checked,
+          next_service_km: nextKm,
+          next_service_date: nextDate,
+          notes: notes
+        }]);
+
+        const currentUrl = window.location.origin + window.location.pathname + "?reg=" + encodeURIComponent(reg);
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), {
+          text: currentUrl,
+          width: 170,
+          height: 170,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff"
+        });
+
+        document.getElementById("share-link-input").value = currentUrl;
+        document.getElementById("preview-link-btn").href = currentUrl;
+        document.getElementById("qr-result-box").classList.remove("hidden");
+        document.getElementById("qr-result-box").scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        alert("Ett fel inträffade: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ` + i18n[currentLang].saveBtn;
+      }
+    }
+  </script>
+</body>
+</html>

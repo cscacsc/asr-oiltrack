@@ -202,20 +202,68 @@
       background: #0b1329;
       border: 1px solid #1e3a8a;
       border-radius: 12px;
-      padding: 20px;
+      padding: 22px;
       margin-top: 20px;
       text-align: center;
     }
-    .workshop-title { font-size: 18px; font-weight: 900; color: var(--accent-gold); margin-bottom: 8px; letter-spacing: 1px; }
+    .workshop-title { font-size: 18px; font-weight: 900; color: var(--accent-gold); margin-bottom: 12px; letter-spacing: 1px; }
+    
     .workshop-info-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
       font-size: 13px;
       color: #cbd5e1;
       margin-bottom: 16px;
+      text-align: left;
     }
-    .workshop-info-list strong { color: var(--accent-blue); }
+    [dir="rtl"] .workshop-info-list { text-align: right; }
+
+    .contact-interactive-link {
+      color: #e2e8f0;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .contact-interactive-link:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+    }
+    .contact-interactive-link strong { color: var(--accent-blue); min-width: 65px; }
+
+    .social-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: #f8fafc;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    .social-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      transform: translateY(-2px);
+    }
+
     .workshop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
     /* History Table */
@@ -398,7 +446,7 @@
     <p style="font-size: 13px; color: var(--text-muted);" data-i18n="msgScan">Skanna koden för serviceprotokollet:</p>
     <div id="qrcode"></div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="triggerPrint()">🖨 <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <button class="btn btn-gold" onclick="openCustomerView()" data-i18n="btnView">👁️ Visa sida</button>
     </div>
   </div>
@@ -422,14 +470,35 @@
     </div>
   </div>
 
-  <!-- بطاقة معلومات الورشة الرسمية للزبون بدون أوقات الدوام -->
+  <!-- بطاقة معلومات الورشة التفاعلية الرسمية للزبون -->
   <div class="workshop-contact-card">
     <div class="workshop-title">ASR BILSERVICE AB</div>
+    
     <div class="workshop-info-list">
-      <div>📍 <strong>Adress:</strong> Kummingatan 7I, 424 43 Angered</div>
-      <div>📞 <strong>Telefon:</strong> 073-725 55 57</div>
-      <div>📧 <strong>E-post:</strong> info@asrbilservice.se</div>
+      <!-- رابط العنوان التفاعلي: يفتح تطبيق الخرائط مباشرة -->
+      <a href="https://maps.google.com/?q=Kummingatan+7I,+424+43+Angered" target="_blank" class="contact-interactive-link" title="Öppna i Google Maps">
+        📍 <strong>Adress:</strong> <span>Kummingatan 7I, 424 43 Angered</span>
+      </a>
+
+      <!-- رابط الهاتف التفاعلي -->
+      <a href="tel:0737255557" class="contact-interactive-link" title="Ring">
+        📞 <strong>Telefon:</strong> <span>073-725 55 57</span>
+      </a>
+
+      <!-- رابط الإيميل التفاعلي -->
+      <a href="mailto:info@asrbilservice.se" class="contact-interactive-link" title="Skicka E-post">
+        📧 <strong>E-post:</strong> <span>info@asrbilservice.se</span>
+      </a>
     </div>
+
+    <!-- أزرار التواصل الاجتماعي الرسمية -->
+    <div class="social-row">
+      <a href="https://asrbilservice.se/" target="_blank" class="social-btn">🌐 Webbplats</a>
+      <a href="https://www.facebook.com/asrbilservice" target="_blank" class="social-btn">📘 Facebook</a>
+      <a href="https://www.instagram.com/asrbilservice" target="_blank" class="social-btn">📸 Instagram</a>
+      <a href="https://www.tiktok.com/@asrbilservice" target="_blank" class="social-btn">🎵 TikTok</a>
+    </div>
+
     <div class="workshop-actions">
       <a href="tel:0737255557" id="wsPhoneBtn" class="btn btn-outline">📞 <span data-i18n="btnCall">Ring oss</span></a>
       <a href="#" id="wsBokaBtn" target="_blank" class="btn btn-success">💬 <span data-i18n="btnBook">Boka tid</span></a>

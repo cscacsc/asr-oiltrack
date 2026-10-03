@@ -25,12 +25,16 @@
     body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; padding: 15px; }
     .container { max-width: 850px; margin: 0 auto; }
 
-    /* Language Switcher Bar */
+    /* Top Controls Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
     .lang-bar {
       display: flex;
-      justify-content: flex-end;
       gap: 8px;
-      margin-bottom: 12px;
     }
     .lang-btn {
       background: var(--card-bg);
@@ -47,6 +51,22 @@
       background: var(--accent-gold);
       border-color: var(--accent-gold);
     }
+
+    .auth-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .auth-btn:hover { background: var(--accent-blue); color: #0f172a; }
 
     header {
       text-align: center;
@@ -143,6 +163,7 @@
     .btn:hover { opacity: 0.9; }
     .btn-gold { background: var(--accent-gold); color: #000; }
     .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
     .btn-outline { background: transparent; color: white; border: 1px solid var(--card-border); }
     .btn-outline:hover { background: rgba(255,255,255,0.05); }
 
@@ -273,14 +294,56 @@
     th { background: #0b1120; padding: 12px 10px; border-bottom: 2px solid var(--card-border); color: var(--accent-blue); font-size: 11px; text-transform: uppercase; }
     td { padding: 12px 10px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
 
+    .btn-action-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-tbl {
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-tbl-edit { background: var(--accent-gold); color: #000; }
+    .btn-tbl-del { background: var(--danger); color: #fff; }
+
     #resultCard { display: none; text-align: center; }
     #qrcode { display: inline-block; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; }
+
+    /* Login Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
 
     /* Print Protocol Styling */
     #printProtocol { display: none; }
     @media print {
       body { background: #ffffff !important; color: #0f172a !important; padding: 0 !important; margin: 0 !important; font-size: 12px; direction: ltr !important; }
       .container { display: none !important; }
+      .modal-backdrop { display: none !important; }
       #printProtocol { display: block !important; width: 100%; max-width: 210mm; margin: 0 auto; padding: 12mm 18mm; background: #ffffff; }
       .p-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0f172a; padding-bottom: 14px; margin-bottom: 20px; }
       .p-logo-title { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #0f172a; }
@@ -309,11 +372,16 @@
 <body>
 
 <div class="container">
-  <!-- Language Selector -->
-  <div class="lang-bar">
-    <button class="lang-btn active" data-lang="sv" onclick="setLanguage('sv')" title="Svenska">🇸🇪</button>
-    <button class="lang-btn" data-lang="en" onclick="setLanguage('en')" title="English">🇬🇧</button>
-    <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')" title="العربية">🇸🇦</button>
+  <!-- Top Bar: Languages & Admin Auth -->
+  <div class="top-bar">
+    <div class="lang-bar">
+      <button class="lang-btn active" data-lang="sv" onclick="setLanguage('sv')" title="Svenska">🇸🇪</button>
+      <button class="lang-btn" data-lang="en" onclick="setLanguage('en')" title="English">🇬🇧</button>
+      <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')" title="العربية">🇸🇦</button>
+    </div>
+    <div>
+      <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
+    </div>
   </div>
 
   <header>
@@ -352,24 +420,27 @@
       </div>
     </div>
 
-    <!-- Verkstadens kontrollknappar -->
-    <div id="adminActionRow" class="action-row">
-      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
+    <div id="adminActionRow" class="action-row" style="display: none;">
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨️️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
       <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
     </div>
   </div>
 
-  <!-- Search Vehicle -->
+  <!-- Search Vehicle (Always available) -->
   <div id="searchBar" class="card" style="display: flex; gap: 10px;">
     <input type="text" id="lookupReg" data-i18n-ph="phSearch" placeholder="Sök Reg.nr (t.ex. OOB237)" style="text-transform: uppercase; flex: 1;">
     <button class="btn btn-gold" style="width: auto; padding: 0 25px;" onclick="searchVehicle()" data-i18n="btnSearch">Sök</button>
   </div>
 
-  <!-- Admin Form -->
-  <div id="adminSection" class="card">
-    <div class="card-title" data-i18n="formTitle">📝 Registrera Service</div>
+  <!-- Admin Form (Hidden until logged in) -->
+  <div id="adminSection" class="card" style="display: none;">
+    <div class="card-title">
+      <span id="formTitleText" data-i18n="formTitle">📝 Registrera Service</span>
+      <button id="btnCancelEdit" class="btn btn-outline" style="display: none; width: auto; padding: 4px 10px; font-size: 11px; margin-left: auto;" onclick="cancelEdit()">Avbryt redigering</button>
+    </div>
     <form id="serviceForm">
+      <input type="hidden" id="editRecordId" value="">
       <div class="form-grid">
         <div class="form-group">
           <label data-i18n="lblReg">Registreringsnummer *</label>
@@ -436,7 +507,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-gold" style="margin-top: 15px;" data-i18n="btnSave">💾 Spara & Skapa QR</button>
+      <button type="submit" id="btnSubmitForm" class="btn btn-gold" style="margin-top: 15px;" data-i18n="btnSave">💾 Spara & Skapa QR</button>
     </form>
   </div>
 
@@ -451,7 +522,7 @@
     </div>
   </div>
 
-  <!-- History Table -->
+  <!-- History Table with Edit & Delete Actions -->
   <div id="historyCard" class="card" style="display: none;">
     <div class="card-title" data-i18n="historyTitle">📜 Servicehistorik</div>
     <div class="table-container">
@@ -463,6 +534,7 @@
             <th data-i18n="thParts">Olja & Delar</th>
             <th data-i18n="thMechanic">Mekaniker</th>
             <th data-i18n="thNext">Nästa service</th>
+            <th id="thActions" style="display: none;">Åtgärd</th>
           </tr>
         </thead>
         <tbody id="historyBody"></tbody>
@@ -470,28 +542,22 @@
     </div>
   </div>
 
-  <!-- بطاقة معلومات الورشة التفاعلية الرسمية للزبون -->
+  <!-- Workshop Info Card -->
   <div class="workshop-contact-card">
     <div class="workshop-title">ASR BILSERVICE AB</div>
     
     <div class="workshop-info-list">
-      <!-- رابط العنوان التفاعلي: يفتح تطبيق الخرائط مباشرة -->
       <a href="https://maps.google.com/?q=Kummingatan+7I,+424+43+Angered" target="_blank" class="contact-interactive-link" title="Öppna i Google Maps">
         📍 <strong>Adress:</strong> <span>Kummingatan 7I, 424 43 Angered</span>
       </a>
-
-      <!-- رابط الهاتف التفاعلي -->
       <a href="tel:0737255557" class="contact-interactive-link" title="Ring">
         📞 <strong>Telefon:</strong> <span>073-725 55 57</span>
       </a>
-
-      <!-- رابط الإيميل التفاعلي -->
       <a href="mailto:info@asrbilservice.se" class="contact-interactive-link" title="Skicka E-post">
         📧 <strong>E-post:</strong> <span>info@asrbilservice.se</span>
       </a>
     </div>
 
-    <!-- أزرار التواصل الاجتماعي الرسمية -->
     <div class="social-row">
       <a href="https://asrbilservice.se/" target="_blank" class="social-btn">🌐 Webbplats</a>
       <a href="https://www.facebook.com/asrbilservice" target="_blank" class="social-btn">📘 Facebook</a>
@@ -506,7 +572,28 @@
   </div>
 </div>
 
-<!-- OFFICIAL A4 PROTOKOLL (PRINT ONLY - 100% SVENSKA & FULL WORKSHOP INFO) -->
+<!-- Modal: Login Box -->
+<div id="loginModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="card-title" style="margin-bottom: 12px;">🔒 Mekaniker Login</div>
+    <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>E-post</label>
+        <input type="email" id="loginEmail" required placeholder="info@asrbilservice.se">
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label>Lösenord</label>
+        <input type="password" id="loginPassword" required placeholder="••••••••">
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="btn btn-gold">Logga in</button>
+        <button type="button" class="btn btn-outline" onclick="closeLoginModal()">Stäng</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- OFFICIAL A4 PROTOKOLL (PRINT ONLY) -->
 <div id="printProtocol">
   <div class="p-header">
     <div>
@@ -608,6 +695,8 @@
 <script>
   const WORKSHOP_PHONE = "0737255557";
   const WORKSHOP_WHATSAPP = "46737255557";
+  // الرابط الرسمي للنظام الفرعي المعتمد
+  const BASE_SERVICE_URL = "https://service.asrbilservice.se";
 
   const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
   const SUPABASE_KEY = "sb_publishable_XiOUO8haa_Ko7LYrj30vaw_AsxLztP2";
@@ -617,6 +706,7 @@
   let currentLang = 'sv';
   let cachedVehicle = null;
   let cachedServices = [];
+  let currentUser = null;
 
   const translations = {
     sv: {
@@ -630,6 +720,7 @@
       phSearch: "Sök Reg.nr (t.ex. OOB237)",
       btnSearch: "Sök",
       formTitle: "📝 Registrera Service",
+      formTitleEdit: "✏️ Redigera Service",
       lblReg: "Registreringsnummer *",
       lblModel: "Bilmärke & Modell",
       lblYear: "Årsmodell",
@@ -649,6 +740,7 @@
       lblNextDate: "Nästa service datum",
       lblNotes: "Noteringar / Anteckningar",
       btnSave: "💾 Spara & Skapa QR",
+      btnUpdate: "💾 Uppdatera Service",
       msgSaved: "✅ Service Sparad!",
       msgScan: "Skanna koden för serviceprotokollet:",
       btnView: "👁️ Visa sida",
@@ -658,6 +750,7 @@
       thParts: "Olja & Delar",
       thMechanic: "Mekaniker",
       thNext: "Nästa service",
+      thAction: "Åtgärd",
       stOverdue: "⚠️ Försenad",
       stDue: "⚠️ Snart dags",
       stOk: "✅ Godkänd (OK)",
@@ -677,6 +770,7 @@
       phSearch: "Search Reg.nr (e.g. OOB237)",
       btnSearch: "Search",
       formTitle: "📝 New Service Record",
+      formTitleEdit: "✏️ Edit Service",
       lblReg: "Registration Number *",
       lblModel: "Car Make & Model",
       lblYear: "Model Year",
@@ -696,6 +790,7 @@
       lblNextDate: "Next Service Date",
       lblNotes: "Notes / Work Order",
       btnSave: "💾 Save & Generate QR",
+      btnUpdate: "💾 Update Service",
       msgSaved: "✅ Service Saved!",
       msgScan: "Scan QR code to open service record:",
       btnView: "👁️ View Page",
@@ -705,7 +800,8 @@
       thParts: "Oil & Parts",
       thMechanic: "Mechanic",
       thNext: "Next Service",
-      stOverdue: "⚠️ Overdue",
+      thAction: "Action",
+      stOverdue: "⚠️️ Overdue",
       stDue: "⚠️ Due Soon",
       stOk: "✅ Approved (OK)",
       smsMsg: "Hello! Here is your digital service protocol from ASR Bilservice for your vehicle",
@@ -724,6 +820,7 @@
       phSearch: "ابحث برقم اللوحة (مثلاً OOB237)",
       btnSearch: "بحث",
       formTitle: "📝 تسجيل صيانة جديدة",
+      formTitleEdit: "✏️ تعديل بيانات الصيانة",
       lblReg: "رقم اللوحة *",
       lblModel: "ماركة وموديل السيارة",
       lblYear: "سنة الصنع",
@@ -743,6 +840,7 @@
       lblNextDate: "تاريخ الصيانة القادمة",
       lblNotes: "ملاحظات إضافية / أمر الشغل",
       btnSave: "💾 حفظ وتوليد الكود",
+      btnUpdate: "💾 تحديث بيانات الصيانة",
       msgSaved: "✅ تم حفظ الصيانة بنجاح!",
       msgScan: "امسح الكود لفتح سجل السيارة الرقمي:",
       btnView: "👁️ عرض الصفحة",
@@ -752,7 +850,8 @@
       thParts: "الزيت والقطع",
       thMechanic: "الفني",
       thNext: "الصيانة القادمة",
-      stOverdue: "⚠️ متأخر عن الموعد",
+      thAction: "إجراء",
+      stOverdue: "⚠️️ متأخر عن الموعد",
       stDue: "⚠️ يقترب موعدها",
       stOk: "✅ الحالة ممتازة (OK)",
       smsMsg: "مرحباً! هذا هو بروتوكول الصيانة الرقمي لسيارتك من ورشة ASR Bilservice",
@@ -796,20 +895,76 @@
     document.getElementById('wsBokaBtn').href = `https://wa.me/${WORKSHOP_WHATSAPP}?text=${bookMsg}`;
   }
 
+  // --- إدارة تسجيل الدخول وصلاحيات المسؤول ---
+  async function initAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    handleAuthState(session ? session.user : null);
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+      handleAuthState(session ? session.user : null);
+    });
+  }
+
+  function handleAuthState(user) {
+    currentUser = user;
+    const authBtnText = document.getElementById('authBtnText');
+    const adminSection = document.getElementById('adminSection');
+    const adminActionRow = document.getElementById('adminActionRow');
+    const thActions = document.getElementById('thActions');
+
+    if (user) {
+      authBtnText.textContent = "Logga ut (" + user.email.split('@')[0] + ")";
+      adminSection.style.display = 'block';
+      adminActionRow.style.display = 'grid';
+      if (thActions) thActions.style.display = 'table-cell';
+    } else {
+      authBtnText.textContent = "Logga in (Mekaniker)";
+      adminSection.style.display = 'none';
+      adminActionRow.style.display = 'none';
+      if (thActions) thActions.style.display = 'none';
+      cancelEdit();
+    }
+    if (cachedServices.length > 0) {
+      renderHistory(cachedServices);
+    }
+  }
+
+  function handleAuthAction() {
+    if (currentUser) {
+      if (confirm("Vill du logga ut från verkstadskontot?")) {
+        supabaseClient.auth.signOut();
+      }
+    } else {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  }
+
+  function closeLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+  }
+
+  async function handleLoginSubmit(e) {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      alert("Fel vid inloggning: " + error.message);
+    } else {
+      closeLoginModal();
+      document.getElementById('loginPassword').value = '';
+    }
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
+    initAuth();
     updateWorkshopButtons();
     const params = new URLSearchParams(window.location.search);
     const regParam = params.get('reg');
     
     if (regParam && regParam.trim() !== '') {
-      document.getElementById('searchBar').style.display = 'none';
-      document.getElementById('adminSection').style.display = 'none';
-      document.getElementById('adminActionRow').style.display = 'none';
       loadVehicleData(regParam.trim().toUpperCase());
-    } else {
-      document.getElementById('searchBar').style.display = 'flex';
-      document.getElementById('adminSection').style.display = 'block';
-      document.getElementById('adminActionRow').style.display = 'grid';
     }
   });
 
@@ -839,6 +994,14 @@
 
     cachedVehicle = vehicle;
     cachedServices = services || [];
+
+    if (vehicle) {
+      document.getElementById('carModel').value = vehicle.model || '';
+      document.getElementById('yearModel').value = vehicle.year_model || '';
+      document.getElementById('vin').value = vehicle.vin || '';
+      document.getElementById('custName').value = vehicle.customer_name || '';
+      document.getElementById('custPhone').value = vehicle.customer_phone || '';
+    }
 
     if (vehicle || (services && services.length > 0)) {
       renderSummary(vehicle, services);
@@ -878,8 +1041,8 @@
       statusDiv.innerHTML = `<span class="status-badge status-ok">${t.stOk}</span>`;
     }
 
-    const fullUrl = encodeURIComponent(window.location.href);
-    const msg = encodeURIComponent(`${t.smsMsg} (${currentReg}): ${window.location.href}`);
+    const targetUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
+    const msg = encodeURIComponent(`${t.smsMsg} (${currentReg}): ${targetUrl}`);
     
     const phone = vehicle?.customer_phone || '';
     let cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -901,6 +1064,8 @@
 
     histCard.style.display = 'block';
     const t = translations[currentLang];
+    const isAdmin = currentUser !== null;
+    document.getElementById('thActions').style.display = isAdmin ? 'table-cell' : 'none';
 
     services.forEach(s => {
       const parts = [];
@@ -916,6 +1081,18 @@
       if (s.next_service_date) nextInfo.push(s.next_service_date);
 
       const tr = document.createElement('tr');
+      let actionHtml = '';
+      if (isAdmin) {
+        actionHtml = `
+          <td>
+            <div class="btn-action-group">
+              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️</button>
+              <button class="btn-tbl btn-tbl-del" onclick="deleteServiceRecord('${s.id}')">🗑️</button>
+            </div>
+          </td>
+        `;
+      }
+
       tr.innerHTML = `
         <td><strong>${s.service_date ? s.service_date.substring(0, 10) : ''}</strong></td>
         <td>${s.mileage || ''} km</td>
@@ -925,9 +1102,61 @@
         </td>
         <td>${s.mechanic || '-'}</td>
         <td>${nextInfo.join(' / ') || '-'}</td>
+        ${actionHtml}
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  // --- تعديل وحذف السجلات المباشر ---
+  function editServiceRecord(recordId) {
+    const s = cachedServices.find(item => item.id == recordId);
+    if (!s) return;
+
+    document.getElementById('editRecordId').value = s.id;
+    document.getElementById('mileage').value = s.mileage || '';
+    document.getElementById('mechanic').value = s.mechanic || '';
+    document.getElementById('oilDetails').value = s.oil_brand_type || '';
+    document.getElementById('chkOil').checked = !!s.oil_filter;
+    document.getElementById('chkAir').checked = !!s.air_filter;
+    document.getElementById('chkCabin').checked = !!s.cabin_filter;
+    document.getElementById('chkFuel').checked = !!s.fuel_filter;
+    document.getElementById('chkSpark').checked = !!s.spark_plugs;
+    document.getElementById('nextMileage').value = s.next_service_mileage || '';
+    document.getElementById('nextDate').value = s.next_service_date || '';
+    document.getElementById('notes').value = s.notes || '';
+
+    const t = translations[currentLang];
+    document.getElementById('formTitleText').textContent = t.formTitleEdit;
+    document.getElementById('btnSubmitForm').textContent = t.btnUpdate;
+    document.getElementById('btnCancelEdit').style.display = 'inline-block';
+
+    document.getElementById('adminSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelEdit() {
+    document.getElementById('editRecordId').value = '';
+    const t = translations[currentLang];
+    document.getElementById('formTitleText').textContent = t.formTitle;
+    document.getElementById('btnSubmitForm').textContent = t.btnSave;
+    document.getElementById('btnCancelEdit').style.display = 'none';
+  }
+
+  async function deleteServiceRecord(recordId) {
+    if (!confirm("Är du säker på att du vill ta bort detta serviceprotokoll permanent? / هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
+      return;
+    }
+
+    const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
+    if (error) {
+      alert("Kunde inte ta bort: " + error.message);
+    } else {
+      alert("Posten har tagits bort! / تم حذف السجل بنجاح!");
+      if (document.getElementById('editRecordId').value == recordId) {
+        cancelEdit();
+      }
+      loadVehicleData(currentReg);
+    }
   }
 
   function preparePrintData(vehicle, services) {
@@ -959,7 +1188,8 @@
 
     document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.';
 
-    const serviceUrl = `${window.location.origin}${window.location.pathname}?reg=${currentReg}`;
+    // تصحيح رابط QR الخاص بالطباعة للرابط الفرعي
+    const serviceUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
     const pQr = document.getElementById('printQrContainer');
     pQr.innerHTML = '';
     new QRCode(pQr, {
@@ -982,6 +1212,7 @@
   document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const reg = document.getElementById('regNr').value.trim().toUpperCase();
+    const editId = document.getElementById('editRecordId').value;
 
     const vehiclePayload = {
       reg_nr: reg,
@@ -996,7 +1227,6 @@
 
     const servicePayload = {
       reg_nr: reg,
-      service_date: new Date().toISOString().substring(0, 10),
       mileage: parseInt(document.getElementById('mileage').value) || 0,
       mechanic: document.getElementById('mechanic').value.trim(),
       oil_brand_type: document.getElementById('oilDetails').value.trim(),
@@ -1010,10 +1240,22 @@
       notes: document.getElementById('notes').value.trim()
     };
 
-    const { error: insErr } = await supabaseClient.from('service_records').insert([servicePayload]);
+    let resultError = null;
 
-    if (!insErr) {
-      const serviceUrl = `${window.location.origin}${window.location.pathname}?reg=${reg}`;
+    if (editId) {
+      // تعديل سجل قائم
+      const { error } = await supabaseClient.from('service_records').update(servicePayload).eq('id', editId);
+      resultError = error;
+    } else {
+      // إدخال سجل صيانة جديد
+      servicePayload.service_date = new Date().toISOString().substring(0, 10);
+      const { error } = await supabaseClient.from('service_records').insert([servicePayload]);
+      resultError = error;
+    }
+
+    if (!resultError) {
+      // توليد الباركود التلقائي بالرابط الفرعي
+      const serviceUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(reg)}`;
       const qrDiv = document.getElementById('qrcode');
       qrDiv.innerHTML = '';
       new QRCode(qrDiv, {
@@ -1026,16 +1268,17 @@
       });
 
       document.getElementById('resultCard').style.display = 'block';
+      cancelEdit();
       await loadVehicleData(reg);
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     } else {
-      alert('Error: ' + insErr.message);
+      alert('Fel vid sparning: ' + resultError.message);
     }
   });
 
   function openCustomerView() {
     if (currentReg) {
-      window.open(`?reg=${currentReg}`, '_blank');
+      window.open(`${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`, '_blank');
     }
   }
 </script>

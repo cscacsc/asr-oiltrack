@@ -1142,10 +1142,44 @@
     document.getElementById('btnCancelEdit').style.display = 'none';
   }
 
-  async function deleteServiceRecord(recordId) {
+    async function deleteServiceRecord(recordId) {
     if (!confirm("Är du säker på att du vill ta bort detta serviceprotokoll permanent? / هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
       return;
     }
+
+    // 1. حذف سجل الصيانة
+    const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
+    if (error) {
+      alert("Kunde inte ta bort: " + error.message);
+      return;
+    }
+
+    // 2. فحص السجلات المتبقية لنفس السيارة
+    const { data: remaining } = await supabaseClient
+      .from('service_records')
+      .select('id')
+      .eq('reg_nr', currentReg);
+
+    // 3. إذا لم يتبق أي سجل (0)، يتم حذف السيارة تلقائياً بالكامل
+    if (!remaining || remaining.length === 0) {
+      await supabaseClient.from('vehicles').delete().eq('reg_nr', currentReg);
+      alert("Posten och fordonet har tagits bort helt! / تم حذف السجل ومسح ملف السيارة بالكامل!");
+      
+      if (document.getElementById('editRecordId').value == recordId) {
+        cancelEdit();
+      }
+      document.getElementById('summaryCard').style.display = 'none';
+      document.getElementById('historyCard').style.display = 'none';
+      document.getElementById('lookupReg').value = '';
+      currentReg = '';
+    } else {
+      alert("Posten har tagits bort! / تم حذف السجل بنجاح!");
+      if (document.getElementById('editRecordId').value == recordId) {
+        cancelEdit();
+      }
+      loadVehicleData(currentReg);
+    }
+  }
 
     const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
     if (error) {

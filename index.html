@@ -1,510 +1,545 @@
 <!DOCTYPE html>
-<html lang="sv" dir="ltr">
+<html lang="sv">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ASR Bilservice - Digital Servicebok</title>
-  <!-- Tailwind CSS & FontAwesome Icons & QR Code Lib -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Supabase JS Client -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASR Bilservice AB - Digital Servicebok & Protokoll</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    [dir="rtl"] body { font-family: 'Cairo', sans-serif; }
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; padding: 15px; }
+    .container { max-width: 800px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    header h1 { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+    header p { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    input, select, textarea {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .checkbox-item input { width: 16px; height: 16px; cursor: pointer; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      background: var(--accent);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      gap: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+      width: 100%;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #15803d; }
+    .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    /* Summary Card */
+    .summary-card {
+      background: #0f172a;
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .summary-plate { font-size: 26px; font-weight: 900; letter-spacing: 1px; }
+    .summary-model { font-size: 14px; color: #94a3b8; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .stat-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
+    .stat-val { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .status-ok { background: rgba(22, 163, 74, 0.2); color: #4ade80; border: 1px solid #16a34a; }
+    .status-due { background: rgba(217, 119, 6, 0.2); color: #fbbf24; border: 1px solid #d97706; }
+    .status-overdue { background: rgba(220, 38, 38, 0.2); color: #f87171; border: 1px solid #dc2626; }
+
+    /* Action bar */
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    /* Table history */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { background: #f8fafc; padding: 10px; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+    td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+
+    /* QR Result Card */
+    #resultCard { display: none; text-align: center; }
+    #qrcode { display: inline-block; margin: 15px 0; padding: 10px; background: white; border-radius: 8px; }
+
+    /* Print Protocol Styling */
+    @media print {
+      body { background: white; padding: 0; color: black; }
+      header, #adminSection, .action-row, .btn, #searchBar { display: none !important; }
+      .container { max-width: 100%; }
+      .card { border: none; box-shadow: none; padding: 0; margin-bottom: 15px; }
+      .summary-card { background: white !important; color: black !important; border: 2px solid #000; padding: 12px; }
+      .summary-header { border-color: #000; }
+      .summary-plate { font-size: 24px; color: #000; }
+      .summary-model, .stat-label { color: #555 !important; }
+      .status-badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
+      th { background: #eee !important; color: #000 !important; }
+      td { border-color: #ccc !important; }
+      #printArea { display: block !important; }
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+<body>
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 backdrop-blur">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="https://www.asrbilservice.se" target="_blank" class="flex items-center gap-3">
-        <!-- Logo Image -->
-        <img src="logo.png" alt="ASR Bilservice Logo" class="h-10 w-auto max-w-[120px] object-contain drop-shadow" onerror="this.style.display='none'" />
-        <div>
-          <h1 class="font-extrabold text-base sm:text-lg leading-tight tracking-wide text-white uppercase">ASR Bilservice</h1>
-          <p class="text-xs text-sky-400 font-medium" id="txt-subbrand">Digital Servicebok</p>
-        </div>
-      </a>
-      
-      <!-- Language Switcher -->
-      <div class="flex items-center bg-slate-950 rounded-xl p-1 text-xs border border-slate-800">
-        <button onclick="setLanguage('sv')" id="btn-sv" class="px-2.5 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all">SV</button>
-        <button onclick="setLanguage('en')" id="btn-en" class="px-2.5 py-1 rounded-lg text-slate-400 transition-all">EN</button>
-        <button onclick="setLanguage('ar')" id="btn-ar" class="px-2.5 py-1 rounded-lg text-slate-400 transition-all">عربي</button>
-      </div>
-    </div>
+<div class="container">
+  <header>
+    <h1>ASR Bilservice AB</h1>
+    <p>Auktoriserat Serviceschema & Digital Servicebok</p>
   </header>
 
-  <!-- Main Container -->
-  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
-    
-    <!-- View 1: Customer Card View (Appears if ?reg=ABC123 in URL) -->
-    <div id="customer-view" class="hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-        
-        <!-- Top Status Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-800">
-          <div>
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 w-max">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span id="txt-active-record">Verifierad Service</span>
-            </span>
-            <h2 id="cust-reg" class="text-3xl sm:text-4xl font-black mt-2 tracking-widest uppercase text-sky-400 font-mono">---</h2>
-            <p id="cust-car" class="text-slate-300 font-medium text-sm mt-0.5">Bilmodell</p>
-          </div>
-          <div class="sm:text-right">
-            <span class="text-xs text-slate-400 block" id="txt-mileage-lbl">Senaste mätarställning</span>
-            <span id="cust-mileage" class="text-3xl font-black text-white">0 km</span>
-          </div>
-        </div>
-
-        <!-- Next Service Alert Card -->
-        <div class="mt-6 bg-gradient-to-r from-sky-950/60 via-slate-900 to-transparent border-l-4 border-sky-500 p-4 rounded-r-2xl">
-          <h3 class="font-bold text-sky-400 text-sm flex items-center gap-2" id="txt-next-header">
-            <i class="fa-regular fa-bell"></i> <span>Nästa Rekommenderade Service</span>
-          </h3>
-          <div class="grid grid-cols-2 gap-4 mt-2 text-sm">
-            <div>
-              <span class="text-slate-400 text-xs block" id="txt-next-km-lbl">Vid mätarställning:</span>
-              <strong id="cust-next-km" class="text-slate-100 text-base">-- km</strong>
-            </div>
-            <div>
-              <span class="text-slate-400 text-xs block" id="txt-next-date-lbl">Eller senast:</span>
-              <strong id="cust-next-date" class="text-slate-100 text-base">--</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Service Details -->
-        <div class="mt-6">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3" id="txt-serv-done">Utförda åtgärder & material</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" id="cust-details-list">
-            <!-- Populated via JS -->
-          </div>
-        </div>
-
-        <!-- Workshop Quick Actions (Call / WhatsApp / Maps) -->
-        <div class="mt-8 pt-6 border-t border-slate-800">
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <img src="logo.png" alt="ASR Logo" class="h-9 w-auto object-contain drop-shadow" onerror="this.style.display='none'" />
-              <div>
-                <div class="font-extrabold text-base text-slate-200">ASR BILSERVICE AB</div>
-                <p class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-sky-400 mr-1"></i> Kummingatan 7I, 424 43 Angered</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <!-- Call -->
-              <a href="tel:+46737255557" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all border border-slate-700">
-                <i class="fa-solid fa-phone text-sky-400"></i> <span id="txt-call-shop">Ring</span>
-              </a>
-              <!-- WhatsApp -->
-              <a href="https://wa.me/46737255557?text=Hej!%20Jag%20kontaktar%20er%20angående%20min%20bilservice." target="_blank" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-950/40">
-                <i class="fa-brands fa-whatsapp text-lg"></i> <span>WhatsApp</span>
-              </a>
-              <!-- Website -->
-              <a href="https://www.asrbilservice.se" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs flex items-center justify-center border border-slate-700">
-                <i class="fa-solid fa-globe"></i>
-              </a>
-              <!-- Google Maps Directions -->
-              <a href="https://maps.google.com/?q=Kummingatan+7I+Angered" target="_blank" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs flex items-center justify-center border border-slate-700">
-                <i class="fa-solid fa-map-location-dot"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-
+  <!-- Summary Card (Overview) -->
+  <div id="summaryCard" class="summary-card" style="display: none;">
+    <div class="summary-header">
+      <div>
+        <div id="sumReg" class="summary-plate">---</div>
+        <div id="sumModel" class="summary-model">---</div>
+      </div>
+      <div id="sumStatus"></div>
+    </div>
+    <div class="summary-grid">
+      <div>
+        <div class="stat-label">Kund</div>
+        <div id="sumOwner" class="stat-val">---</div>
+      </div>
+      <div>
+        <div class="stat-label">Mätarställning</div>
+        <div id="sumMileage" class="stat-val">---</div>
+      </div>
+      <div>
+        <div class="stat-label">Årsmodell / VIN</div>
+        <div id="sumVin" class="stat-val">---</div>
+      </div>
+      <div>
+        <div class="stat-label">Serviceregistreringar</div>
+        <div id="sumVisits" class="stat-val">0</div>
       </div>
     </div>
-
-    <!-- View 2: Workshop Admin Dashboard -->
-    <div id="admin-view" class="space-y-6">
-      
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-xl font-bold" id="txt-dash-title">Registrera Ny Service</h2>
-          <p class="text-xs text-slate-400" id="txt-dash-desc">Skapa digitalt servicekort och generera QR-kod</p>
-        </div>
-      </div>
-
-      <!-- Service Form -->
-      <form id="service-form" onsubmit="handleSaveService(event)" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-reg">Registreringsnummer *</label>
-            <input type="text" id="in-reg" required placeholder="t.ex. ABC 123" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500 uppercase font-mono tracking-wider text-sky-400 font-bold" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-mileage">Mätarställning (km) *</label>
-            <input type="number" id="in-mileage" required placeholder="t.ex. 145000" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-make">Bilmärke & Modell</label>
-            <input type="text" id="in-make" placeholder="t.ex. Toyota Corolla" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-oil-type">Oljetyp / Viskositet</label>
-            <input type="text" id="in-oil-type" placeholder="t.ex. 5W-30 Syntet" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-oil-brand">Oljemärke / Mängd</label>
-            <input type="text" id="in-oil-brand" placeholder="t.ex. Castrol 4.2L" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500" />
-          </div>
-        </div>
-
-        <!-- Filter Checkboxes -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-2" id="lbl-filters">Utbytta filter</label>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-              <input type="checkbox" id="chk-oil-filter" checked class="accent-sky-500 w-4 h-4">
-              <span id="txt-chk-oil">Oljefilter</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-              <input type="checkbox" id="chk-air-filter" class="accent-sky-500 w-4 h-4">
-              <span id="txt-chk-air">Luftfilter</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-              <input type="checkbox" id="chk-cabin-filter" class="accent-sky-500 w-4 h-4">
-              <span id="txt-chk-cabin">Kupéfilter</span>
-            </label>
-            <label class="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer hover:border-slate-700 transition-all">
-              <input type="checkbox" id="chk-fuel-filter" class="accent-sky-500 w-4 h-4">
-              <span id="txt-chk-fuel">Bränslefilter</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Next Service Calculations -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-next-km">Nästa service vid mätarställning (km)</label>
-            <input type="number" id="in-next-km" placeholder="t.ex. 160000" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-next-date">Nästa service senast datum</label>
-            <input type="date" id="in-next-date" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500 text-slate-300" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1" id="lbl-notes">Övriga reparationer & Verkstadsanteckningar</label>
-          <textarea id="in-notes" rows="2" placeholder="t.ex. Bromsar fram bytta, spolarvätska påfylld..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-sky-500 text-sm"></textarea>
-        </div>
-
-        <button type="submit" id="btn-save" class="w-full py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 font-extrabold text-slate-950 transition-all shadow-lg shadow-sky-950/60 flex items-center justify-center gap-2 text-sm tracking-wide">
-          <i class="fa-solid fa-floppy-disk"></i> <span id="txt-save-btn">Spara & Generera QR-kod</span>
-        </button>
-      </form>
-
-      <!-- QR Code Modal / Result Box -->
-      <div id="qr-result-box" class="hidden bg-slate-900 border border-sky-500/50 rounded-3xl p-6 text-center space-y-4 shadow-2xl">
-        <h3 class="font-bold text-sky-400 text-lg" id="txt-qr-ready">Servicekortet är klart!</h3>
-        <p class="text-xs text-slate-400" id="txt-qr-instruction">Kunden kan scanna koden eller öppna länken för att se sin digitala servicebok.</p>
-        
-        <div class="inline-block p-4 bg-white rounded-2xl shadow-xl mx-auto" id="qrcode"></div>
-
-        <div>
-          <input type="text" id="share-link-input" readonly class="w-full max-w-md px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-center font-mono text-sky-400" />
-        </div>
-
-        <div class="flex justify-center gap-3">
-          <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-2 transition-all border border-slate-700">
-            <i class="fa-solid fa-print"></i> <span id="txt-print-btn">Skriv ut QR</span>
-          </button>
-          <a id="preview-link-btn" href="#" target="_blank" class="px-4 py-2.5 rounded-xl bg-sky-500 text-slate-950 hover:bg-sky-400 text-xs font-bold flex items-center gap-2 transition-all shadow-md">
-            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span id="txt-preview-btn">Öppna kundvy</span>
-          </a>
-        </div>
-      </div>
-
+    <div class="action-row">
+      <button class="btn btn-outline" style="color: white; border-color: #475569;" onclick="window.print()">🖨️ Skriv ut protokoll</button>
+      <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
+      <a id="btnSendSms" href="#" class="btn btn-outline" style="color: white; border-color: #475569;">💬 SMS</a>
     </div>
+  </div>
 
-  </main>
+  <!-- Search / Quick Plate Check -->
+  <div id="searchBar" class="card" style="display: flex; gap: 10px;">
+    <input type="text" id="lookupReg" placeholder="Sök Reg.nr (t.ex. OOB237)" style="text-transform: uppercase; flex: 1;">
+    <button class="btn" style="width: auto; padding: 0 20px;" onclick="searchVehicle()">Sök</button>
+  </div>
 
-  <script>
-    // 1. Supabase Initialization
-    const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_XiOUO8haa_Ko7LYrj30vaw_AsxLztP2";
-    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <!-- Admin Form (Add Service) -->
+  <div id="adminSection" class="card">
+    <div class="card-title">📝 Registrera Ny Service (Serviceschema)</div>
+    <form id="serviceForm">
+      <div class="form-grid">
+        <!-- Fordonsuppgifter -->
+        <div class="form-group">
+          <label>Registreringsnummer *</label>
+          <input type="text" id="regNr" required placeholder="T.ex. OOB237" style="text-transform: uppercase;">
+        </div>
+        <div class="form-group">
+          <label>Bilmärke & Modell</label>
+          <input type="text" id="carModel" placeholder="T.ex. VW Golf 1.6">
+        </div>
+        <div class="form-group">
+          <label>Årsmodell</label>
+          <input type="text" id="yearModel" placeholder="T.ex. 2008">
+        </div>
+        <div class="form-group">
+          <label>Chassinummer (VIN)</label>
+          <input type="text" id="vin" placeholder="T.ex. WVWZZZ1KZ8W024661">
+        </div>
 
-    // 2. Multilingual Translations Dictionary
-    const i18n = {
-      sv: {
-        dir: "ltr",
-        subbrand: "Digital Servicebok",
-        activeRecord: "Verifierad Service",
-        mileageLbl: "Senaste mätarställning",
-        nextHeader: "Nästa Rekommenderade Service",
-        nextKmLbl: "Vid mätarställning:",
-        nextDateLbl: "Eller senast:",
-        servDone: "Utförda åtgärder & material",
-        callShop: "Ring Verkstaden",
-        dashTitle: "Registrera Ny Service",
-        dashDesc: "Skapa digitalt servicekort och generera QR-kod",
-        lblReg: "Registreringsnummer *",
-        lblMileage: "Mätarställning (km) *",
-        lblMake: "Bilmärke & Modell",
-        lblOilType: "Oljetyp / Viskositet",
-        lblOilBrand: "Oljemärke / Mängd",
-        lblFilters: "Utbytta filter",
-        chkOil: "Oljefilter",
-        chkAir: "Luftfilter",
-        chkCabin: "Kupéfilter",
-        chkFuel: "Bränslefilter",
-        lblNextKm: "Nästa service vid mätarställning (km)",
-        lblNextDate: "Nästa service senast datum",
-        lblNotes: "Övriga reparationer & Verkstadsanteckningar",
-        saveBtn: "Spara & Generera QR-kod",
-        qrReady: "Servicekortet är klart!",
-        qrInstruction: "Kunden kan scanna koden eller öppna länken för att se sin digitala servicebok.",
-        printBtn: "Skriv ut QR",
-        previewBtn: "Öppna kundvy"
-      },
-      en: {
-        dir: "ltr",
-        subbrand: "Digital Service Record",
-        activeRecord: "Verified Service",
-        mileageLbl: "Latest Mileage",
-        nextHeader: "Next Recommended Service",
-        nextKmLbl: "At mileage:",
-        nextDateLbl: "Or due date:",
-        servDone: "Completed Services & Parts",
-        callShop: "Call Workshop",
-        dashTitle: "Register New Service",
-        dashDesc: "Create digital service card and generate QR code",
-        lblReg: "License Plate Number *",
-        lblMileage: "Current Mileage (km) *",
-        lblMake: "Car Make & Model",
-        lblOilType: "Oil Type / Viscosity",
-        lblOilBrand: "Oil Brand / Capacity",
-        lblFilters: "Replaced Filters",
-        chkOil: "Oil Filter",
-        chkAir: "Air Filter",
-        chkCabin: "Cabin Filter",
-        chkFuel: "Fuel Filter",
-        lblNextKm: "Next service at mileage (km)",
-        lblNextDate: "Next service due date",
-        lblNotes: "Additional repairs & Workshop notes",
-        saveBtn: "Save & Generate QR Code",
-        qrReady: "Service Record Ready!",
-        qrInstruction: "The customer can scan the QR code or use the link to view their digital record.",
-        printBtn: "Print QR",
-        previewBtn: "Open Client View"
-      },
-      ar: {
-        dir: "rtl",
-        subbrand: "دفتر الصيانة الرقمي",
-        activeRecord: "صيانة معتمدة وموثقة",
-        mileageLbl: "قراءة العداد الحالية",
-        nextHeader: "موعد الصيانة القادمة الموصى بها",
-        nextKmLbl: "عند بلوغ العداد:",
-        nextDateLbl: "أو بحلول تاريخ:",
-        servDone: "الأعمال والقطع المنجزة",
-        callShop: "اتصال بالورشة",
-        dashTitle: "تسجيل صيانة جديدة",
-        dashDesc: "إنشاء كارت صيانة رقمي وتوليد رمز QR",
-        lblReg: "رقم اللوحة *",
-        lblMileage: "قراءة العداد (كم) *",
-        lblMake: "ماركة وموديل السيارة",
-        lblOilType: "نوع ولزوجة الزيت",
-        lblOilBrand: "ماركة الزيت والكمية",
-        lblFilters: "الفلاتر المستبدلة",
-        chkOil: "فلتر زيت",
-        chkAir: "فلتر هواء",
-        chkCabin: "فلتر مكيف",
-        chkFuel: "فلتر وقود",
-        lblNextKm: "الصيانة القادمة عند العداد (كم)",
-        lblNextDate: "تاريخ الصيانة القادمة",
-        lblNotes: "إصلاحات أخرى وملاحظات الفني",
-        saveBtn: "حفظ وتوليد كود QR",
-        qrReady: "تم تجهيز كارت الصيانة بنجاح!",
-        qrInstruction: "يمكن للزبون مسح الرمز أو فتح الرابط لعرض دفتر الصيانة الرقمي فوراً.",
-        printBtn: "طباعة الرمز",
-        previewBtn: "عرض صفحة الزبون"
+        <!-- Kunduppgifter -->
+        <div class="form-group">
+          <label>Kundens namn</label>
+          <input type="text" id="custName" placeholder="För- och efternamn">
+        </div>
+        <div class="form-group">
+          <label>Telefonnummer</label>
+          <input type="tel" id="custPhone" placeholder="T.ex. 0701234567">
+        </div>
+
+        <!-- Servicedetaljer -->
+        <div class="form-group">
+          <label>Mätarställning (km) *</label>
+          <input type="number" id="mileage" required placeholder="T.ex. 220391">
+        </div>
+        <div class="form-group">
+          <label>Mekaniker</label>
+          <input type="text" id="mechanic" placeholder="T.ex. Ahmed">
+        </div>
+        <div class="form-group">
+          <label>Motorolja (Märke, Viskositet, Mängd)</label>
+          <input type="text" id="oilDetails" placeholder="T.ex. Quartz Ineo 5W-30 (4.2L)">
+        </div>
+
+        <!-- Utbytta filter och tändstift -->
+        <div class="form-group full-width">
+          <label>Utbytta delar / Servicepunkter</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="chkOil"> Oljefilter</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkAir"> Luftfilter</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkCabin"> Kupéfilter</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkFuel"> Bränslefilter</label>
+            <label class="checkbox-item"><input type="checkbox" id="chkSpark"> Tändstift</label>
+          </div>
+        </div>
+
+        <!-- Nästa service -->
+        <div class="form-group">
+          <label>Nästa service vid mätarställning (km)</label>
+          <input type="number" id="nextMileage" placeholder="T.ex. 235391">
+        </div>
+        <div class="form-group">
+          <label>Nästa service senast datum</label>
+          <input type="date" id="nextDate">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Övriga noteringar / Arbetsorder</label>
+          <textarea id="notes" rows="2" placeholder="Fler detaljer eller utförda reparationer..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn" style="margin-top: 15px;">💾 Spara & Generera QR-kod</button>
+    </form>
+  </div>
+
+  <!-- QR Result Container -->
+  <div id="resultCard" class="card">
+    <div class="card-title" style="justify-content: center;">✅ Service registrerad!</div>
+    <p style="font-size: 13px; color: var(--text-muted);">Skanna koden för att öppna fordonets digitala serviceprotokoll:</p>
+    <div id="qrcode"></div>
+    <div class="action-row">
+      <button class="btn btn-outline" onclick="window.print()">🖨️ Skriv ut</button>
+      <button class="btn" onclick="openCustomerView()">👁️ Öppna kundvy</button>
+    </div>
+  </div>
+
+  <!-- History Records List -->
+  <div id="historyCard" class="card" style="display: none;">
+    <div class="card-title">📜 Servicehistorik</div>
+    <div class="table-container">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Mätare</th>
+            <th>Olja & Delar</th>
+            <th>Mekaniker</th>
+            <th>Nästa service</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Supabase Configuration
+  const SUPABASE_URL = 'https://xlhbzjmuohostlhlbgbc.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsaGJ6am11b2hvc3RsaGxiZ2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1OTEzMTUsImV4cCI6MjA1OTE2NzMxNX0.c0Q9E_gJ8m5L_1L1L1_EXAMPLE_REPLACE_WITH_REAL_KEY'; 
+  // ملاحظة: تأكد من مفتاح الـ anon key الخاص بك في Supabase إذا لزم الأمر
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentReg = '';
+
+  // Parse URL query parameter (?reg=ABC123)
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const regParam = params.get('reg');
+    if (regParam) {
+      loadVehicleData(regParam.toUpperCase());
+    }
+  });
+
+  function searchVehicle() {
+    const reg = document.getElementById('lookupReg').value.trim().toUpperCase();
+    if (reg) {
+      window.history.pushState({}, '', `?reg=${reg}`);
+      loadVehicleData(reg);
+    }
+  }
+
+  // Load Data
+  async function loadVehicleData(regNr) {
+    currentReg = regNr;
+    document.getElementById('regNr').value = regNr;
+
+    // Fetch vehicle info
+    const { data: vehicle, error: vErr } = await supabaseClient
+      .from('vehicles')
+      .select('*')
+      .eq('reg_nr', regNr)
+      .maybeSingle();
+
+    // Fetch services
+    const { data: services, error: sErr } = await supabaseClient
+      .from('service_records')
+      .select('*')
+      .eq('reg_nr', regNr)
+      .order('service_date', { ascending: false });
+
+    if (vehicle || (services && services.length > 0)) {
+      renderSummary(vehicle, services);
+      renderHistory(services);
+    }
+  }
+
+  function renderSummary(vehicle, services) {
+    const sumCard = document.getElementById('summaryCard');
+    sumCard.style.display = 'block';
+
+    const latest = services && services.length > 0 ? services[0] : null;
+
+    document.getElementById('sumReg').textContent = currentReg;
+    document.getElementById('sumModel').textContent = (vehicle?.model || '') + (vehicle?.year_model ? ` (${vehicle.year_model})` : '');
+    document.getElementById('sumOwner').textContent = vehicle?.customer_name || 'Privatkund';
+    document.getElementById('sumMileage').textContent = latest?.mileage ? `${latest.mileage} km` : '---';
+    document.getElementById('sumVin').textContent = vehicle?.vin || (vehicle?.year_model ? `Årsmodell: ${vehicle.year_model}` : '---');
+    document.getElementById('sumVisits').textContent = services ? services.length : 0;
+
+    // Calculate Status (Due Soon / OK / Overdue)
+    const statusDiv = document.getElementById('sumStatus');
+    if (latest && latest.next_service_date) {
+      const today = new Date();
+      const nextDate = new Date(latest.next_service_date);
+      const diffDays = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        statusDiv.innerHTML = `<span class="status-badge status-overdue">⚠️ Försenad (${Math.abs(diffDays)} dgr)</span>`;
+      } else if (diffDays <= 30) {
+        statusDiv.innerHTML = `<span class="status-badge status-due">⚠️ Snart dags (${diffDays} dgr kvar)</span>`;
+      } else {
+        statusDiv.innerHTML = `<span class="status-badge status-ok">✅ Godkänd (OK)</span>`;
       }
+    } else {
+      statusDiv.innerHTML = `<span class="status-badge status-ok">✅ Service OK</span>`;
+    }
+
+    // Setup WhatsApp and SMS Buttons
+    const fullUrl = encodeURIComponent(window.location.href);
+    const msg = encodeURIComponent(`Hej! Här är ditt digitala serviceprotokoll från ASR Bilservice för din bil (${currentReg}): ${window.location.href}`);
+    
+    const phone = vehicle?.customer_phone || '';
+    // Format Swedish phone if needed
+    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('07')) cleanPhone = '46' + cleanPhone.substring(1);
+
+    document.getElementById('btnSendWhatsapp').href = `https://wa.me/${cleanPhone}?text=${msg}`;
+    document.getElementById('btnSendSms').href = `sms:${phone}?body=${msg}`;
+  }
+
+  function renderHistory(services) {
+    const histCard = document.getElementById('historyCard');
+    const tbody = document.getElementById('historyBody');
+    tbody.innerHTML = '';
+
+    if (!services || services.length === 0) {
+      histCard.style.display = 'none';
+      return;
+    }
+
+    histCard.style.display = 'block';
+
+    services.forEach(s => {
+      const parts = [];
+      if (s.oil_brand_type) parts.push(`🛢️ ${s.oil_brand_type}`);
+      if (s.oil_filter) parts.push('Oljefilter');
+      if (s.air_filter) parts.push('Luftfilter');
+      if (s.cabin_filter) parts.push('Kupéfilter');
+      if (s.fuel_filter) parts.push('Bränslefilter');
+      if (s.spark_plugs) parts.push('Tändstift');
+
+      const nextInfo = [];
+      if (s.next_service_mileage) nextInfo.push(`${s.next_service_mileage} km`);
+      if (s.next_service_date) nextInfo.push(s.next_service_date);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${s.service_date ? s.service_date.substring(0, 10) : ''}</strong></td>
+        <td>${s.mileage || ''} km</td>
+        <td>
+          <div style="font-weight: 600;">${parts.join(', ')}</div>
+          ${s.notes ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Obs: ${s.notes}</div>` : ''}
+        </td>
+        <td>${s.mechanic || '-'}</td>
+        <td>${nextInfo.join(' / ') || '-'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Handle Form Submission
+  document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const reg = document.getElementById('regNr').value.trim().toUpperCase();
+
+    // 1. Upsert Vehicle
+    const vehiclePayload = {
+      reg_nr: reg,
+      model: document.getElementById('carModel').value.trim(),
+      year_model: document.getElementById('yearModel').value.trim(),
+      vin: document.getElementById('vin').value.trim(),
+      customer_name: document.getElementById('custName').value.trim(),
+      customer_phone: document.getElementById('custPhone').value.trim()
     };
 
-    let currentLang = "sv";
+    await supabaseClient.from('vehicles').upsert(vehiclePayload, { onConflict: 'reg_nr' });
 
-    function setLanguage(lang) {
-      currentLang = lang;
-      const dict = i18n[lang];
-      document.documentElement.setAttribute("lang", lang);
-      document.documentElement.setAttribute("dir", dict.dir);
+    // 2. Insert Service Record
+    const servicePayload = {
+      reg_nr: reg,
+      service_date: new Date().toISOString().substring(0, 10),
+      mileage: parseInt(document.getElementById('mileage').value) || 0,
+      mechanic: document.getElementById('mechanic').value.trim(),
+      oil_brand_type: document.getElementById('oilDetails').value.trim(),
+      oil_filter: document.getElementById('chkOil').checked,
+      air_filter: document.getElementById('chkAir').checked,
+      cabin_filter: document.getElementById('chkCabin').checked,
+      fuel_filter: document.getElementById('chkFuel').checked,
+      spark_plugs: document.getElementById('chkSpark').checked,
+      next_service_mileage: parseInt(document.getElementById('nextMileage').value) || null,
+      next_service_date: document.getElementById('nextDate').value || null,
+      notes: document.getElementById('notes').value.trim()
+    };
 
-      ["sv", "en", "ar"].forEach(l => {
-        const btn = document.getElementById("btn-" + l);
-        if (btn) {
-          if (l === lang) {
-            btn.className = "px-2.5 py-1 rounded-lg bg-sky-500 text-slate-950 font-bold transition-all";
-          } else {
-            btn.className = "px-2.5 py-1 rounded-lg text-slate-400 transition-all";
-          }
-        }
+    const { error: insErr } = await supabaseClient.from('service_records').insert([servicePayload]);
+
+    if (!insErr) {
+      // Generate QR Code
+      const serviceUrl = `${window.location.origin}${window.location.pathname}?reg=${reg}`;
+      const qrDiv = document.getElementById('qrcode');
+      qrDiv.innerHTML = '';
+      new QRCode(qrDiv, {
+        text: serviceUrl,
+        width: 140,
+        height: 140,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
       });
 
-      document.getElementById("txt-subbrand").innerText = dict.subbrand;
-      document.getElementById("txt-active-record").innerText = dict.activeRecord;
-      document.getElementById("txt-mileage-lbl").innerText = dict.mileageLbl;
-      document.getElementById("txt-next-header").innerHTML = `<i class="fa-regular fa-bell mr-2"></i> ` + dict.nextHeader;
-      document.getElementById("txt-next-km-lbl").innerText = dict.nextKmLbl;
-      document.getElementById("txt-next-date-lbl").innerText = dict.nextDateLbl;
-      document.getElementById("txt-serv-done").innerText = dict.servDone;
-      document.getElementById("txt-call-shop").innerText = dict.callShop;
-
-      document.getElementById("txt-dash-title").innerText = dict.dashTitle;
-      document.getElementById("txt-dash-desc").innerText = dict.dashDesc;
-      document.getElementById("lbl-reg").innerText = dict.lblReg;
-      document.getElementById("lbl-mileage").innerText = dict.lblMileage;
-      document.getElementById("lbl-make").innerText = dict.lblMake;
-      document.getElementById("lbl-oil-type").innerText = dict.lblOilType;
-      document.getElementById("lbl-oil-brand").innerText = dict.lblOilBrand;
-      document.getElementById("lbl-filters").innerText = dict.lblFilters;
-      document.getElementById("txt-chk-oil").innerText = dict.chkOil;
-      document.getElementById("txt-chk-air").innerText = dict.chkAir;
-      document.getElementById("txt-chk-cabin").innerText = dict.chkCabin;
-      document.getElementById("txt-chk-fuel").innerText = dict.chkFuel;
-      document.getElementById("lbl-next-km").innerText = dict.lblNextKm;
-      document.getElementById("lbl-next-date").innerText = dict.lblNextDate;
-      document.getElementById("lbl-notes").innerText = dict.lblNotes;
-      document.getElementById("txt-save-btn").innerText = dict.saveBtn;
-      document.getElementById("txt-qr-ready").innerText = dict.qrReady;
-      document.getElementById("txt-qr-instruction").innerText = dict.qrInstruction;
-      document.getElementById("txt-print-btn").innerText = dict.printBtn;
-      document.getElementById("txt-preview-btn").innerText = dict.previewBtn;
+      document.getElementById('resultCard').style.display = 'block';
+      loadVehicleData(reg);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else {
+      alert('Kunde inte spara: ' + insErr.message);
     }
+  });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const regParam = urlParams.get("reg");
-
-    if (regParam) {
-      document.getElementById("admin-view").classList.add("hidden");
-      document.getElementById("customer-view").classList.remove("hidden");
-      loadCustomerData(regParam.toUpperCase());
+  function openCustomerView() {
+    if (currentReg) {
+      window.open(`?reg=${currentReg}`, '_blank');
     }
-
-    async function loadCustomerData(reg) {
-      document.getElementById("cust-reg").innerText = reg;
-      try {
-        const { data: vehicle } = await db.from("vehicles").select("*").eq("reg_number", reg).maybeSingle();
-        if (vehicle && vehicle.make) {
-          document.getElementById("cust-car").innerText = `${vehicle.make} ${vehicle.model || ''}`;
-        }
-
-        const { data: records } = await db.from("service_records")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(1);
-
-        if (records && records.length > 0) {
-          const rec = records[0];
-          document.getElementById("cust-mileage").innerText = `${rec.mileage_km.toLocaleString()} km`;
-          document.getElementById("cust-next-km").innerText = rec.next_service_km ? `${rec.next_service_km.toLocaleString()} km` : "--";
-          document.getElementById("cust-next-date").innerText = rec.next_service_date || "--";
-
-          const list = document.getElementById("cust-details-list");
-          list.innerHTML = "";
-
-          if (rec.oil_type || rec.oil_brand) {
-            list.innerHTML += `<div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center gap-3">
-              <i class="fa-solid fa-oil-can text-sky-400"></i>
-              <div><strong class="block text-xs text-slate-400">Motorolja</strong>${rec.oil_brand || ''} ${rec.oil_type || ''}</div>
-            </div>`;
-          }
-
-          const filters = [];
-          if (rec.oil_filter_changed) filters.push("Oljefilter");
-          if (rec.air_filter_changed) filters.push("Luftfilter");
-          if (rec.cabin_filter_changed) filters.push("Kupéfilter");
-          if (rec.fuel_filter_changed) filters.push("Bränslefilter");
-
-          if (filters.length > 0) {
-            list.innerHTML += `<div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center gap-3">
-              <i class="fa-solid fa-filter text-sky-400"></i>
-              <div><strong class="block text-xs text-slate-400">Bytta Filter</strong>${filters.join(", ")}</div>
-            </div>`;
-          }
-
-          if (rec.notes) {
-            list.innerHTML += `<div class="p-3 bg-slate-950 rounded-xl border border-slate-800 sm:col-span-2">
-              <strong class="block text-xs text-slate-400 mb-1">Anteckningar & Arbete</strong>
-              <p class="text-xs text-slate-300">${rec.notes}</p>
-            </div>`;
-          }
-        }
-      } catch (err) {
-        console.error("Error loading vehicle record:", err);
-      }
-    }
-
-    async function handleSaveService(e) {
-      e.preventDefault();
-      const reg = document.getElementById("in-reg").value.trim().toUpperCase();
-      const mileage = parseInt(document.getElementById("in-mileage").value);
-      const make = document.getElementById("in-make").value.trim();
-      const oilType = document.getElementById("in-oil-type").value.trim();
-      const oilBrand = document.getElementById("in-oil-brand").value.trim();
-      const nextKm = document.getElementById("in-next-km").value ? parseInt(document.getElementById("in-next-km").value) : null;
-      const nextDate = document.getElementById("in-next-date").value || null;
-      const notes = document.getElementById("in-notes").value.trim();
-
-      const btn = document.getElementById("btn-save");
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sparar...`;
-
-      try {
-        let { data: veh } = await db.from("vehicles").select("id").eq("reg_number", reg).maybeSingle();
-        if (!veh) {
-          const { data: newVeh } = await db.from("vehicles").insert([{ reg_number: reg, make: make }]).select().single();
-          veh = newVeh;
-        }
-
-        await db.from("service_records").insert([{
-          vehicle_id: veh.id,
-          mileage_km: mileage,
-          oil_type: oilType,
-          oil_brand: oilBrand,
-          oil_filter_changed: document.getElementById("chk-oil-filter").checked,
-          air_filter_changed: document.getElementById("chk-air-filter").checked,
-          cabin_filter_changed: document.getElementById("chk-cabin-filter").checked,
-          fuel_filter_changed: document.getElementById("chk-fuel-filter").checked,
-          next_service_km: nextKm,
-          next_service_date: nextDate,
-          notes: notes
-        }]);
-
-        const currentUrl = window.location.origin + window.location.pathname + "?reg=" + encodeURIComponent(reg);
-        document.getElementById("qrcode").innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), {
-          text: currentUrl,
-          width: 170,
-          height: 170,
-          colorDark: "#020617",
-          colorLight: "#ffffff"
-        });
-
-        document.getElementById("share-link-input").value = currentUrl;
-        document.getElementById("preview-link-btn").href = currentUrl;
-        document.getElementById("qr-result-box").classList.remove("hidden");
-        document.getElementById("qr-result-box").scrollIntoView({ behavior: 'smooth' });
-
-      } catch (err) {
-        alert("Ett fel inträffade: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ` + i18n[currentLang].saveBtn;
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>

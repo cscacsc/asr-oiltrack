@@ -207,18 +207,143 @@
     #resultCard { display: none; text-align: center; }
     #qrcode { display: inline-block; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; }
 
+    /* =========================================================
+       PROFESSIONAL PROTOKOLL PRINT SECTION (A4 OFFICIAL FORMAT)
+       ========================================================= */
+    #printProtocol {
+      display: none;
+    }
+
     @media print {
-      body { background: white; padding: 0; color: black; }
-      header, #adminSection, .action-row, .btn, #searchBar, .lang-bar { display: none !important; }
-      .container { max-width: 100%; }
-      .card { border: none; box-shadow: none; padding: 0; margin-bottom: 15px; background: white; }
-      .summary-card { background: white !important; color: black !important; border: 2px solid #000; padding: 12px; }
-      .summary-header { border-color: #000; }
-      .summary-plate { font-size: 24px; color: #000; }
-      .summary-model, .stat-label { color: #444 !important; }
-      .status-badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-      th { background: #eee !important; color: #000 !important; border-bottom: 1px solid #000; }
-      td { border-color: #ccc !important; color: #000 !important; }
+      body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 12px;
+      }
+      .container { display: none !important; }
+      #printProtocol {
+        display: block !important;
+        width: 100%;
+        max-width: 210mm;
+        margin: 0 auto;
+        padding: 15mm 20mm;
+        background: #ffffff;
+      }
+
+      .p-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+      .p-logo-title {
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        color: #0f172a;
+      }
+      .p-logo-sub {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #475569;
+      }
+      .p-meta {
+        text-align: right;
+        font-size: 12px;
+        color: #334155;
+      }
+
+      .p-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 15px;
+        margin-bottom: 18px;
+      }
+      .p-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 12px;
+        background: #f8fafc;
+      }
+      .p-box-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #0f172a;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
+      }
+      .p-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+      .p-label { color: #64748b; font-weight: 600; }
+      .p-val { font-weight: 700; color: #0f172a; }
+
+      .p-checklist-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 18px 0;
+      }
+      .p-checklist-table th {
+        background: #0f172a !important;
+        color: #ffffff !important;
+        font-size: 11px;
+        padding: 8px 10px;
+        text-align: left;
+        border: 1px solid #0f172a;
+      }
+      .p-checklist-table td {
+        padding: 8px 10px;
+        border: 1px solid #cbd5e1;
+        font-size: 12px;
+        color: #0f172a;
+      }
+      .p-checklist-table tr:nth-child(even) {
+        background: #f8fafc;
+      }
+      .check-yes {
+        font-weight: 900;
+        color: #16a34a;
+      }
+      .check-no {
+        color: #94a3b8;
+      }
+
+      .p-footer-grid {
+        display: grid;
+        grid-template-columns: 1fr 140px;
+        gap: 20px;
+        align-items: center;
+        border-top: 2px solid #0f172a;
+        padding-top: 15px;
+        margin-top: 20px;
+      }
+      .p-signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 30px;
+      }
+      .p-sign-line {
+        border-top: 1px dashed #64748b;
+        padding-top: 5px;
+        font-size: 11px;
+        color: #475569;
+        text-align: center;
+      }
+      #printQrContainer img {
+        margin: 0 auto;
+        display: block;
+      }
     }
   </style>
 </head>
@@ -268,7 +393,7 @@
       </div>
     </div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="window.print()">🖨️ <span data-i18n="btnPrint">Skriv ut</span></button>
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
       <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
     </div>
@@ -360,7 +485,7 @@
     <p style="font-size: 13px; color: var(--text-muted);" data-i18n="msgScan">Skanna koden för serviceprotokollet:</p>
     <div id="qrcode"></div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="window.print()">🖨️ <span data-i18n="btnPrint">Skriv ut</span></button>
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <button class="btn btn-gold" onclick="openCustomerView()" data-i18n="btnView">👁️ Visa sida</button>
     </div>
   </div>
@@ -385,6 +510,104 @@
   </div>
 </div>
 
+<!-- =========================================================
+     OFFICIAL A4 PROTOKOLL (APPEARS ONLY ON PRINT)
+     ========================================================= -->
+<div id="printProtocol">
+  <div class="p-header">
+    <div>
+      <div class="p-logo-title">ASR BILSERVICE AB</div>
+      <div class="p-logo-sub">AUKTORISERAT SERVICEPROTOKOLL & VERKSTAD</div>
+    </div>
+    <div class="p-meta">
+      <div><strong>Datum:</strong> <span id="pDate"></span></div>
+      <div><strong>Protokoll Nr:</strong> <span id="pDocNr"></span></div>
+    </div>
+  </div>
+
+  <div class="p-grid">
+    <div class="p-box">
+      <div class="p-box-title">FORDONS- & ÄGARUPPGIFTER / بيانات المركبة والمالك</div>
+      <div class="p-row"><span class="p-label">Registreringsnummer:</span> <span class="p-val" id="pReg">---</span></div>
+      <div class="p-row"><span class="p-label">Bilmärke & Modell:</span> <span class="p-val" id="pModel">---</span></div>
+      <div class="p-row"><span class="p-label">Årsmodell / VIN:</span> <span class="p-val" id="pVin">---</span></div>
+      <div class="p-row"><span class="p-label">Kundens namn:</span> <span class="p-val" id="pOwner">---</span></div>
+      <div class="p-row"><span class="p-label">Telefon:</span> <span class="p-val" id="pPhone">---</span></div>
+    </div>
+    <div class="p-box">
+      <div class="p-box-title">SERVICEÖVERSIKT / نظرة عامة على الخدمة</div>
+      <div class="p-row"><span class="p-label">Mätarställning:</span> <span class="p-val" id="pMileage">--- km</span></div>
+      <div class="p-row"><span class="p-label">Mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
+      <div class="p-row"><span class="p-label">Nästa service (km):</span> <span class="p-val" id="pNextKm">--- km</span></div>
+      <div class="p-row"><span class="p-label">Nästa service datum:</span> <span class="p-val" id="pNextDate">---</span></div>
+      <div class="p-row"><span class="p-label">Status:</span> <span class="p-val" style="color: #16a34a;">GODKÄND / OK</span></div>
+    </div>
+  </div>
+
+  <table class="p-checklist-table">
+    <thead>
+      <tr>
+        <th>SERVICEPUNKT / KONTROLL (البنود والفحص)</th>
+        <th style="width: 140px;">STATUS (الحالة)</th>
+        <th>SPECIFIKATION / NOTERING (التفاصيل)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Motorolja (Byte)</strong> | زيت المحرك</td>
+        <td class="check-yes">✔ UTFÖRD (تم التبديل)</td>
+        <td id="pOilSpec">---</td>
+      </tr>
+      <tr>
+        <td><strong>Oljefilter (Byte)</strong> | فلتر الزيت</td>
+        <td id="pChkOil">---</td>
+        <td>Nytt godkänt filter installerat</td>
+      </tr>
+      <tr>
+        <td><strong>Luftfilter (Byte)</strong> | فلتر الهواء</td>
+        <td id="pChkAir">---</td>
+        <td>Kontrollerat / Bytt</td>
+      </tr>
+      <tr>
+        <td><strong>Kupéfilter (Byte)</strong> | فلتر المكيف</td>
+        <td id="pChkCabin">---</td>
+        <td>Kontrollerat / Bytt</td>
+      </tr>
+      <tr>
+        <td><strong>Bränslefilter (Byte)</strong> | فلتر الوقود</td>
+        <td id="pChkFuel">---</td>
+        <td>Kontrollerat / Bytt</td>
+      </tr>
+      <tr>
+        <td><strong>Tändstift (Byte)</strong> | بواجي الاحتراق</td>
+        <td id="pChkSpark">---</td>
+        <td>Kontrollerade / Bytta</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="p-box" style="margin-bottom: 20px;">
+    <div class="p-box-title">MEKANIKERNOTERINGAR / ARBETSORDER (ملاحظات الورشة)</div>
+    <div id="pNotes" style="font-size: 12px; color: #334155; min-height: 35px;">Inga övriga anmärkningar. Bilen har genomgått komplett auktoriserad service.</div>
+  </div>
+
+  <div class="p-footer-grid">
+    <div>
+      <div style="font-size: 11px; color: #475569; line-height: 1.6;">
+        Detta serviceprotokoll bekräftar att service och inspektion har utförts fackmannamässigt av <strong>ASR Bilservice AB</strong> i enlighet med fordonstillverkarens föreskrifter. Skanna QR-koden till höger för att öppna fordonets fullständiga digitala servicehistorik.
+      </div>
+      <div class="p-signatures">
+        <div class="p-sign-line">Underskrift Mekaniker / توقيع الفني</div>
+        <div class="p-sign-line">Kundens underskrift / توقيع العميل</div>
+      </div>
+    </div>
+    <div style="text-align: center;">
+      <div id="printQrContainer"></div>
+      <div style="font-size: 9px; font-weight: 700; margin-top: 4px; text-transform: uppercase;">Digital Servicebok</div>
+    </div>
+  </div>
+</div>
+
 <script>
   // 1. Supabase Initialization
   const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
@@ -393,8 +616,9 @@
 
   let currentReg = '';
   let currentLang = 'sv';
+  let cachedVehicle = null;
+  let cachedServices = [];
 
-  // Translations Dictionary
   const translations = {
     sv: {
       headerTitle: "Digital Servicebok & Protokoll",
@@ -403,7 +627,7 @@
       lblMileage: "Mätarställning",
       lblYearVin: "Årsmodell / VIN",
       lblVisits: "Servicehistorik",
-      btnPrint: "Skriv ut",
+      btnPrint: "Skriv ut protokoll",
       phSearch: "Sök Reg.nr (t.ex. OOB237)",
       btnSearch: "Sök",
       formTitle: "📝 Registrera Service",
@@ -447,7 +671,7 @@
       lblMileage: "Current Mileage",
       lblYearVin: "Year / VIN",
       lblVisits: "Total Services",
-      btnPrint: "Print",
+      btnPrint: "Print Protocol",
       phSearch: "Search Reg.nr (e.g. OOB237)",
       btnSearch: "Search",
       formTitle: "📝 New Service Record",
@@ -491,7 +715,7 @@
       lblMileage: "العداد الحالي",
       lblYearVin: "سنة الصنع / الشاسيه",
       lblVisits: "عدد مرات الصيانة",
-      btnPrint: "طباعة",
+      btnPrint: "طباعة التقرير الرسمي",
       phSearch: "ابحث برقم اللوحة (مثلاً OOB237)",
       btnSearch: "بحث",
       formTitle: "📝 تسجيل صيانة جديدة",
@@ -555,7 +779,6 @@
     }
   }
 
-  // عند تحميل الصفحة: إذا جاء الزبون عبر رابط أو QR كود فيه ?reg=... يتم إخفاء البحث والاستمارة فوراً
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const regParam = params.get('reg');
@@ -593,9 +816,13 @@
       .eq('reg_nr', regNr)
       .order('service_date', { ascending: false });
 
+    cachedVehicle = vehicle;
+    cachedServices = services || [];
+
     if (vehicle || (services && services.length > 0)) {
       renderSummary(vehicle, services);
       renderHistory(services);
+      preparePrintData(vehicle, services);
     }
   }
 
@@ -682,6 +909,57 @@
     });
   }
 
+  // تجهيز بيانات البروتوكول الرسمي للطباعة بدقة
+  function preparePrintData(vehicle, services) {
+    const latest = services && services.length > 0 ? services[0] : null;
+    const now = new Date();
+
+    document.getElementById('pDate').textContent = latest?.service_date ? latest.service_date.substring(0, 10) : now.toISOString().substring(0, 10);
+    document.getElementById('pDocNr').textContent = 'ASR-' + currentReg + '-' + (latest?.id || Math.floor(1000 + Math.random() * 9000));
+
+    document.getElementById('pReg').textContent = currentReg;
+    document.getElementById('pModel').textContent = (vehicle?.model || '---') + (vehicle?.year_model ? ` (${vehicle.year_model})` : '');
+    document.getElementById('pVin').textContent = vehicle?.vin || '---';
+    document.getElementById('pOwner').textContent = vehicle?.customer_name || 'Privatkund';
+    document.getElementById('pPhone').textContent = vehicle?.customer_phone || '---';
+
+    document.getElementById('pMileage').textContent = (latest?.mileage || '---') + ' km';
+    document.getElementById('pMechanic').textContent = latest?.mechanic || 'ASR Bilservice';
+    document.getElementById('pNextKm').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
+    document.getElementById('pNextDate').textContent = latest?.next_service_date || '---';
+
+    document.getElementById('pOilSpec').textContent = latest?.oil_brand_type || 'Kvalitetsolja enligt tillverkarens norm';
+
+    const fmtCheck = (val) => val ? '<span class="check-yes">✔ UTFÖRD (Bytt)</span>' : '<span class="check-no">✖ EJ BYTT / KONTROLLERAD</span>';
+    document.getElementById('pChkOil').innerHTML = fmtCheck(latest?.oil_filter);
+    document.getElementById('pChkAir').innerHTML = fmtCheck(latest?.air_filter);
+    document.getElementById('pChkCabin').innerHTML = fmtCheck(latest?.cabin_filter);
+    document.getElementById('pChkFuel').innerHTML = fmtCheck(latest?.fuel_filter);
+    document.getElementById('pChkSpark').innerHTML = fmtCheck(latest?.spark_plugs);
+
+    document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig service.';
+
+    // بناء QR كود عالي الدقة داخل البروتوكول
+    const serviceUrl = `${window.location.origin}${window.location.pathname}?reg=${currentReg}`;
+    const pQr = document.getElementById('printQrContainer');
+    pQr.innerHTML = '';
+    new QRCode(pQr, {
+      text: serviceUrl,
+      width: 100,
+      height: 100,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  function triggerPrint() {
+    if (cachedVehicle || cachedServices.length > 0) {
+      preparePrintData(cachedVehicle, cachedServices);
+    }
+    window.print();
+  }
+
   document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const reg = document.getElementById('regNr').value.trim().toUpperCase();
@@ -729,7 +1007,7 @@
       });
 
       document.getElementById('resultCard').style.display = 'block';
-      loadVehicleData(reg);
+      await loadVehicleData(reg);
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     } else {
       alert('Error: ' + insErr.message);

@@ -208,7 +208,7 @@
     #qrcode { display: inline-block; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; }
 
     /* =========================================================
-       PROFESSIONAL PROTOKOLL PRINT SECTION (A4 OFFICIAL FORMAT)
+       OFFICIAL A4 PROTOKOLL (SWEDISH STANDARD FOR WORKSHOPS)
        ========================================================= */
     #printProtocol {
       display: none;
@@ -221,6 +221,7 @@
         padding: 0 !important;
         margin: 0 !important;
         font-size: 12px;
+        direction: ltr !important;
       }
       .container { display: none !important; }
       #printProtocol {
@@ -228,7 +229,7 @@
         width: 100%;
         max-width: 210mm;
         margin: 0 auto;
-        padding: 15mm 20mm;
+        padding: 12mm 18mm;
         background: #ffffff;
       }
 
@@ -260,7 +261,7 @@
 
       .p-grid {
         display: grid;
-        grid-template-columns: 1.5fr 1fr;
+        grid-template-columns: 1.4fr 1fr;
         gap: 15px;
         margin-bottom: 18px;
       }
@@ -511,7 +512,7 @@
 </div>
 
 <!-- =========================================================
-     OFFICIAL A4 PROTOKOLL (APPEARS ONLY ON PRINT)
+     OFFICIAL A4 PROTOKOLL (PRINT ONLY - 100% SVENSKA)
      ========================================================= -->
 <div id="printProtocol">
   <div class="p-header">
@@ -527,78 +528,78 @@
 
   <div class="p-grid">
     <div class="p-box">
-      <div class="p-box-title">FORDONS- & ÄGARUPPGIFTER / بيانات المركبة والمالك</div>
+      <div class="p-box-title">FORDONS- & ÄGARUPPGIFTER</div>
       <div class="p-row"><span class="p-label">Registreringsnummer:</span> <span class="p-val" id="pReg">---</span></div>
       <div class="p-row"><span class="p-label">Bilmärke & Modell:</span> <span class="p-val" id="pModel">---</span></div>
       <div class="p-row"><span class="p-label">Årsmodell / VIN:</span> <span class="p-val" id="pVin">---</span></div>
       <div class="p-row"><span class="p-label">Kundens namn:</span> <span class="p-val" id="pOwner">---</span></div>
-      <div class="p-row"><span class="p-label">Telefon:</span> <span class="p-val" id="pPhone">---</span></div>
+      <div class="p-row"><span class="p-label">Telefonnummer:</span> <span class="p-val" id="pPhone">---</span></div>
     </div>
     <div class="p-box">
-      <div class="p-box-title">SERVICEÖVERSIKT / نظرة عامة على الخدمة</div>
-      <div class="p-row"><span class="p-label">Mätarställning:</span> <span class="p-val" id="pMileage">--- km</span></div>
-      <div class="p-row"><span class="p-label">Mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
+      <div class="p-box-title">SERVICEÖVERSIKT</div>
+      <div class="p-row"><span class="p-label">Mätarställning vid service:</span> <span class="p-val" id="pMileage">--- km</span></div>
+      <div class="p-row"><span class="p-label">Ansvarig mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
       <div class="p-row"><span class="p-label">Nästa service (km):</span> <span class="p-val" id="pNextKm">--- km</span></div>
-      <div class="p-row"><span class="p-label">Nästa service datum:</span> <span class="p-val" id="pNextDate">---</span></div>
-      <div class="p-row"><span class="p-label">Status:</span> <span class="p-val" style="color: #16a34a;">GODKÄND / OK</span></div>
+      <div class="p-row"><span class="p-label">Nästa service senast:</span> <span class="p-val" id="pNextDate">---</span></div>
+      <div class="p-row"><span class="p-label">Servicebedömning:</span> <span class="p-val" style="color: #16a34a;">GODKÄND (OK)</span></div>
     </div>
   </div>
 
   <table class="p-checklist-table">
     <thead>
       <tr>
-        <th>SERVICEPUNKT / KONTROLL (البنود والفحص)</th>
-        <th style="width: 140px;">STATUS (الحالة)</th>
-        <th>SPECIFIKATION / NOTERING (التفاصيل)</th>
+        <th>SERVICEPUNKT / KONTROLLMOMENT</th>
+        <th style="width: 150px;">STATUS</th>
+        <th>SPECIFIKATION / NOTERING</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>Motorolja (Byte)</strong> | زيت المحرك</td>
-        <td class="check-yes">✔ UTFÖRD (تم التبديل)</td>
+        <td><strong>Motorolja</strong> (Byte)</td>
+        <td class="check-yes">✔ UTFÖRD (Bytt)</td>
         <td id="pOilSpec">---</td>
       </tr>
       <tr>
-        <td><strong>Oljefilter (Byte)</strong> | فلتر الزيت</td>
+        <td><strong>Oljefilter</strong> (Byte)</td>
         <td id="pChkOil">---</td>
-        <td>Nytt godkänt filter installerat</td>
+        <td>Nytt filter enligt tillverkarens specifikation</td>
       </tr>
       <tr>
-        <td><strong>Luftfilter (Byte)</strong> | فلتر الهواء</td>
+        <td><strong>Luftfilter</strong> (Byte)</td>
         <td id="pChkAir">---</td>
-        <td>Kontrollerat / Bytt</td>
+        <td>Inspekterat / Nytt filter</td>
       </tr>
       <tr>
-        <td><strong>Kupéfilter (Byte)</strong> | فلتر المكيف</td>
+        <td><strong>Kupéfilter</strong> (Byte)</td>
         <td id="pChkCabin">---</td>
-        <td>Kontrollerat / Bytt</td>
+        <td>Inspekterat / Nytt filter</td>
       </tr>
       <tr>
-        <td><strong>Bränslefilter (Byte)</strong> | فلتر الوقود</td>
+        <td><strong>Bränslefilter</strong> (Byte)</td>
         <td id="pChkFuel">---</td>
-        <td>Kontrollerat / Bytt</td>
+        <td>Inspekterat / Nytt filter</td>
       </tr>
       <tr>
-        <td><strong>Tändstift (Byte)</strong> | بواجي الاحتراق</td>
+        <td><strong>Tändstift</strong> (Byte)</td>
         <td id="pChkSpark">---</td>
-        <td>Kontrollerade / Bytta</td>
+        <td>Kontrollerade / Nya tändstift</td>
       </tr>
     </tbody>
   </table>
 
   <div class="p-box" style="margin-bottom: 20px;">
-    <div class="p-box-title">MEKANIKERNOTERINGAR / ARBETSORDER (ملاحظات الورشة)</div>
-    <div id="pNotes" style="font-size: 12px; color: #334155; min-height: 35px;">Inga övriga anmärkningar. Bilen har genomgått komplett auktoriserad service.</div>
+    <div class="p-box-title">MEKANIKERNOTERINGAR / ARBETSORDER</div>
+    <div id="pNotes" style="font-size: 12px; color: #334155; min-height: 35px;">Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.</div>
   </div>
 
   <div class="p-footer-grid">
     <div>
       <div style="font-size: 11px; color: #475569; line-height: 1.6;">
-        Detta serviceprotokoll bekräftar att service och inspektion har utförts fackmannamässigt av <strong>ASR Bilservice AB</strong> i enlighet med fordonstillverkarens föreskrifter. Skanna QR-koden till höger för att öppna fordonets fullständiga digitala servicehistorik.
+        Detta serviceprotokoll intygar att fordonet genomgått service och inspektion i enlighet med gällande tillverkarspecifikationer av <strong>ASR Bilservice AB</strong>. Skanna QR-koden till höger för att granska fordonets digitala servicebok och historik online.
       </div>
       <div class="p-signatures">
-        <div class="p-sign-line">Underskrift Mekaniker / توقيع الفني</div>
-        <div class="p-sign-line">Kundens underskrift / توقيع العميل</div>
+        <div class="p-sign-line">Underskrift Verkstad / Mekaniker</div>
+        <div class="p-sign-line">Kundens underskrift / Godkännande</div>
       </div>
     </div>
     <div style="text-align: center;">
@@ -909,7 +910,7 @@
     });
   }
 
-  // تجهيز بيانات البروتوكول الرسمي للطباعة بدقة
+  // Protokoll Data Prepared 100% in Swedish
   function preparePrintData(vehicle, services) {
     const latest = services && services.length > 0 ? services[0] : null;
     const now = new Date();
@@ -924,7 +925,7 @@
     document.getElementById('pPhone').textContent = vehicle?.customer_phone || '---';
 
     document.getElementById('pMileage').textContent = (latest?.mileage || '---') + ' km';
-    document.getElementById('pMechanic').textContent = latest?.mechanic || 'ASR Bilservice';
+    document.getElementById('pMechanic').textContent = latest?.mechanic || 'ASR Bilservice AB';
     document.getElementById('pNextKm').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
     document.getElementById('pNextDate').textContent = latest?.next_service_date || '---';
 
@@ -937,9 +938,8 @@
     document.getElementById('pChkFuel').innerHTML = fmtCheck(latest?.fuel_filter);
     document.getElementById('pChkSpark').innerHTML = fmtCheck(latest?.spark_plugs);
 
-    document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig service.';
+    document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.';
 
-    // بناء QR كود عالي الدقة داخل البروتوكول
     const serviceUrl = `${window.location.origin}${window.location.pathname}?reg=${currentReg}`;
     const pQr = document.getElementById('printQrContainer');
     pQr.innerHTML = '';

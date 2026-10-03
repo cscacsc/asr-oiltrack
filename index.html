@@ -179,7 +179,6 @@
       .status-badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
       th { background: #eee !important; color: #000 !important; }
       td { border-color: #ccc !important; }
-      #printArea { display: block !important; }
     }
   </style>
 </head>
@@ -342,11 +341,9 @@
 </div>
 
 <script>
-  // Supabase Configuration
-  const SUPABASE_URL = 'https://xlhbzjmuohostlhlbgbc.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhsaGJ6am11b2hvc3RsaGxiZ2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1OTEzMTUsImV4cCI6MjA1OTE2NzMxNX0.c0Q9E_gJ8m5L_1L1L1_EXAMPLE_REPLACE_WITH_REAL_KEY'; 
-  // ملاحظة: تأكد من مفتاح الـ anon key الخاص بك في Supabase إذا لزم الأمر
-
+  // 1. Supabase Initialization
+  const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_XiOUO8haa_Ko7LYrj30vaw_AsxLztP2";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   let currentReg = '';
@@ -429,7 +426,6 @@
     const msg = encodeURIComponent(`Hej! Här är ditt digitala serviceprotokoll från ASR Bilservice för din bil (${currentReg}): ${window.location.href}`);
     
     const phone = vehicle?.customer_phone || '';
-    // Format Swedish phone if needed
     let cleanPhone = phone.replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('07')) cleanPhone = '46' + cleanPhone.substring(1);
 

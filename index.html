@@ -316,6 +316,22 @@
     #resultCard { display: none; text-align: center; }
     #qrcode { display: inline-block; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; }
 
+    /* Alert Message for Not Found */
+    .not-found-card {
+      display: none;
+      text-align: center;
+      border: 1px solid var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .not-found-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--warning);
+    }
+
     /* Login Modal */
     .modal-backdrop {
       display: none;
@@ -421,7 +437,7 @@
     </div>
 
     <div id="adminActionRow" class="action-row" style="display: none;">
-      <button class="btn btn-outline" onclick="triggerPrint()">🖨 <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
       <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
     </div>
@@ -431,6 +447,11 @@
   <div id="searchBar" class="card" style="display: flex; gap: 10px;">
     <input type="text" id="lookupReg" data-i18n-ph="phSearch" placeholder="Sök Reg.nr (t.ex. OOB237)" style="text-transform: uppercase; flex: 1;">
     <button class="btn btn-gold" style="width: auto; padding: 0 25px;" onclick="searchVehicle()" data-i18n="btnSearch">Sök</button>
+  </div>
+
+  <!-- Not Found Alert Box -->
+  <div id="noVehicleMsg" class="not-found-card">
+    <div class="not-found-text" id="noVehicleText">⚠️ Inget fordon eller servicehistorik hittades.</div>
   </div>
 
   <!-- Admin Form (Hidden until logged in) -->
@@ -695,7 +716,6 @@
 <script>
   const WORKSHOP_PHONE = "0737255557";
   const WORKSHOP_WHATSAPP = "46737255557";
-  // الرابط الرسمي للنظام الفرعي المعتمد
   const BASE_SERVICE_URL = "https://service.asrbilservice.se";
 
   const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
@@ -707,6 +727,7 @@
   let cachedVehicle = null;
   let cachedServices = [];
   let currentUser = null;
+  let lastSearchedNotFoundReg = '';
 
   const translations = {
     sv: {
@@ -757,7 +778,8 @@
       smsMsg: "Hej! Här är ditt digitala serviceprotokoll från ASR Bilservice för din bil",
       btnCall: "Ring oss",
       btnBook: "Boka tid via WhatsApp",
-      bokaMsg: "Hej ASR Bilservice! Jag vill boka tid för service/reparation för min bil med reg.nr"
+      bokaMsg: "Hej ASR Bilservice! Jag vill boka tid för service/reparation för min bil med reg.nr",
+      msgNotFound: "⚠️ Inget fordon eller servicehistorik hittades för registreringsnummer"
     },
     en: {
       headerTitle: "Digital Service Book & Protocol",
@@ -807,7 +829,8 @@
       smsMsg: "Hello! Here is your digital service protocol from ASR Bilservice for your vehicle",
       btnCall: "Call Us",
       btnBook: "Book Appointment",
-      bokaMsg: "Hello ASR Bilservice! I would like to book a service appointment for vehicle reg.nr"
+      bokaMsg: "Hello ASR Bilservice! I would like to book a service appointment for vehicle reg.nr",
+      msgNotFound: "⚠️ No vehicle or service history found for registration number"
     },
     ar: {
       headerTitle: "سجل الخدمة والفحص الرقمي",
@@ -857,7 +880,8 @@
       smsMsg: "مرحباً! هذا هو بروتوكول الصيانة الرقمي لسيارتك من ورشة ASR Bilservice",
       btnCall: "اتصل بنا",
       btnBook: "حجز موعد عبر الواتساب",
-      bokaMsg: "مرحباً ASR Bilservice، أود حجز موعد صيانة لسيارتي رقم اللوحة"
+      bokaMsg: "مرحباً ASR Bilservice، أود حجز موعد صيانة لسيارتي رقم اللوحة",
+      msgNotFound: "⚠️ عذراً، لا يوجد أي مركبة أو سجل صيانة مسجل لرقم السيارة"
     }
   };
 
@@ -883,9 +907,28 @@
 
     updateWorkshopButtons();
 
+    // تحديث لغة رسالة التنبيه إن كانت ظاهرة حالياً
+    if (lastSearchedNotFoundReg) {
+      showNotFoundAlert(lastSearchedNotFoundReg);
+    }
+
     if (currentReg) {
       loadVehicleData(currentReg);
     }
+  }
+
+  function showNotFoundAlert(regNr) {
+    const t = translations[currentLang];
+    const noMsgEl = document.getElementById('noVehicleMsg');
+    const noTxtEl = document.getElementById('noVehicleText');
+    if (noTxtEl) noTxtEl.textContent = `${t.msgNotFound} (${regNr})`;
+    if (noMsgEl) noMsgEl.style.display = 'block';
+  }
+
+  function hideNotFoundAlert() {
+    lastSearchedNotFoundReg = '';
+    const noMsgEl = document.getElementById('noVehicleMsg');
+    if (noMsgEl) noMsgEl.style.display = 'none';
   }
 
   function updateWorkshopButtons() {
@@ -971,6 +1014,7 @@
   function searchVehicle() {
     const reg = document.getElementById('lookupReg').value.trim().toUpperCase();
     if (reg) {
+      hideNotFoundAlert();
       loadVehicleData(reg);
     }
   }
@@ -1004,9 +1048,16 @@
     }
 
     if (vehicle || (services && services.length > 0)) {
+      hideNotFoundAlert();
       renderSummary(vehicle, services);
       renderHistory(services);
       preparePrintData(vehicle, services);
+    } else {
+      // السيارة غير مسجلة بالورشة إطلاقاً
+      document.getElementById('summaryCard').style.display = 'none';
+      document.getElementById('historyCard').style.display = 'none';
+      lastSearchedNotFoundReg = regNr;
+      showNotFoundAlert(regNr);
     }
   }
 
@@ -1086,7 +1137,7 @@
         actionHtml = `
           <td>
             <div class="btn-action-group">
-              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️</button>
+              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️️</button>
               <button class="btn-tbl btn-tbl-del" onclick="deleteServiceRecord('${s.id}')">🗑️</button>
             </div>
           </td>
@@ -1172,6 +1223,7 @@
       document.getElementById('historyCard').style.display = 'none';
       document.getElementById('lookupReg').value = '';
       currentReg = '';
+      hideNotFoundAlert();
     } else {
       alert("Posten har tagits bort! / تم حذف السجل بنجاح!");
       if (document.getElementById('editRecordId').value == recordId) {
@@ -1210,7 +1262,6 @@
 
     document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.';
 
-    // تصحيح رابط QR الخاص بالطباعة للرابط الفرعي
     const serviceUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
     const pQr = document.getElementById('printQrContainer');
     pQr.innerHTML = '';
@@ -1265,18 +1316,15 @@
     let resultError = null;
 
     if (editId) {
-      // تعديل سجل قائم
       const { error } = await supabaseClient.from('service_records').update(servicePayload).eq('id', editId);
       resultError = error;
     } else {
-      // إدخال سجل صيانة جديد
       servicePayload.service_date = new Date().toISOString().substring(0, 10);
       const { error } = await supabaseClient.from('service_records').insert([servicePayload]);
       resultError = error;
     }
 
     if (!resultError) {
-      // توليد الباركود التلقائي بالرابط الفرعي
       const serviceUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(reg)}`;
       const qrDiv = document.getElementById('qrcode');
       qrDiv.innerHTML = '';
@@ -1291,6 +1339,7 @@
 
       document.getElementById('resultCard').style.display = 'block';
       cancelEdit();
+      hideNotFoundAlert();
       await loadVehicleData(reg);
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     } else {

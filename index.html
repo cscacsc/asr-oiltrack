@@ -265,7 +265,7 @@
     </div>
   </div>
 
-  <!-- Search Vehicle -->
+  <!-- Search Vehicle (خاص بالورشة) -->
   <div id="searchBar" class="card" style="display: flex; gap: 10px;">
     <input type="text" id="lookupReg" data-i18n-ph="phSearch" placeholder="Sök Reg.nr (t.ex. OOB237)" style="text-transform: uppercase; flex: 1;">
     <button class="btn btn-gold" style="width: auto; padding: 0 25px;" onclick="searchVehicle()" data-i18n="btnSearch">Sök</button>
@@ -351,7 +351,7 @@
     <p style="font-size: 13px; color: var(--text-muted);" data-i18n="msgScan">Skanna koden för serviceprotokollet:</p>
     <div id="qrcode"></div>
     <div class="action-row">
-      <button class="btn btn-outline" onclick="window.print()">🖨️ <span data-i18n="btnPrint">Skriv ut</span></button>
+      <button class="btn btn-outline" onclick="window.print()">🖨️️ <span data-i18n="btnPrint">Skriv ut</span></button>
       <button class="btn btn-gold" onclick="openCustomerView()" data-i18n="btnView">👁️ Visa sida</button>
     </div>
   </div>
@@ -514,7 +514,7 @@
       thParts: "الزيت والقطع",
       thMechanic: "الفني",
       thNext: "الصيانة القادمة",
-      stOverdue: "⚠️ متأخر عن الموعد",
+      stOverdue: "⚠️️ متأخر عن الموعد",
       stDue: "⚠️ يقترب موعدها",
       stOk: "✅ الحالة ممتازة (OK)",
       smsMsg: "مرحباً! هذا هو بروتوكول الصيانة الرقمي لسيارتك من ورشة ASR Bilservice"
@@ -531,13 +531,11 @@
       btn.classList.toggle('active', btn.textContent.toLowerCase().includes(lang));
     });
 
-    // Update Text Elements
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       if (translations[lang][key]) el.textContent = translations[lang][key];
     });
 
-    // Update Placeholders
     document.querySelectorAll('[data-i18n-ph]').forEach(el => {
       const key = el.getAttribute('data-i18n-ph');
       if (translations[lang][key]) el.setAttribute('placeholder', translations[lang][key]);
@@ -548,10 +546,13 @@
     }
   }
 
+  // عند تحميل الصفحة: إذا جاء الزبون عبر رابط أو QR كود فيه ?reg=... يتم إخفاء البحث والاستمارة فوراً
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const regParam = params.get('reg');
     if (regParam) {
+      document.getElementById('searchBar').style.display = 'none';
+      document.getElementById('adminSection').style.display = 'none';
       loadVehicleData(regParam.toUpperCase());
     }
   });
@@ -559,7 +560,6 @@
   function searchVehicle() {
     const reg = document.getElementById('lookupReg').value.trim().toUpperCase();
     if (reg) {
-      window.history.pushState({}, '', `?reg=${reg}`);
       loadVehicleData(reg);
     }
   }

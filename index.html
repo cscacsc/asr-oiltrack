@@ -421,7 +421,7 @@
     </div>
 
     <div id="adminActionRow" class="action-row" style="display: none;">
-      <button class="btn btn-outline" onclick="triggerPrint()">🖨️️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
+      <button class="btn btn-outline" onclick="triggerPrint()">🖨 <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
       <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
       <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
     </div>
@@ -579,7 +579,7 @@
     <form id="loginForm" onsubmit="handleLoginSubmit(event)">
       <div class="form-group" style="margin-bottom: 12px;">
         <label>E-post</label>
-        <input type="email" id="loginEmail" required placeholder="asr@asr.se">
+        <input type="email" id="loginEmail" required placeholder="">
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
         <label>Lösenord</label>
@@ -801,7 +801,7 @@
       thMechanic: "Mechanic",
       thNext: "Next Service",
       thAction: "Action",
-      stOverdue: "⚠️️ Overdue",
+      stOverdue: "⚠️ Overdue",
       stDue: "⚠️ Due Soon",
       stOk: "✅ Approved (OK)",
       smsMsg: "Hello! Here is your digital service protocol from ASR Bilservice for your vehicle",
@@ -851,7 +851,7 @@
       thMechanic: "الفني",
       thNext: "الصيانة القادمة",
       thAction: "إجراء",
-      stOverdue: "⚠️️ متأخر عن الموعد",
+      stOverdue: "⚠️ متأخر عن الموعد",
       stDue: "⚠️ يقترب موعدها",
       stOk: "✅ الحالة ممتازة (OK)",
       smsMsg: "مرحباً! هذا هو بروتوكول الصيانة الرقمي لسيارتك من ورشة ASR Bilservice",
@@ -1142,7 +1142,7 @@
     document.getElementById('btnCancelEdit').style.display = 'none';
   }
 
-    async function deleteServiceRecord(recordId) {
+  async function deleteServiceRecord(recordId) {
     if (!confirm("Är du säker på att du vill ta bort detta serviceprotokoll permanent? / هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
       return;
     }
@@ -1172,18 +1172,6 @@
       document.getElementById('historyCard').style.display = 'none';
       document.getElementById('lookupReg').value = '';
       currentReg = '';
-    } else {
-      alert("Posten har tagits bort! / تم حذف السجل بنجاح!");
-      if (document.getElementById('editRecordId').value == recordId) {
-        cancelEdit();
-      }
-      loadVehicleData(currentReg);
-    }
-  }
-
-    const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
-    if (error) {
-      alert("Kunde inte ta bort: " + error.message);
     } else {
       alert("Posten har tagits bort! / تم حذف السجل بنجاح!");
       if (document.getElementById('editRecordId').value == recordId) {

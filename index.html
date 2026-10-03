@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASR Bilservice AB - Digital Servicebok & Protokoll</title>
+  <title>ASR Bilservice AB - Digital Servicebok</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --primary: #0f172a;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
+      --primary: #1e293b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
       --success: #16a34a;
       --warning: #d97706;
       --danger: #dc2626;
-      --bg: #f8fafc;
+      --bg: #f1f5f9;
       --card-bg: #ffffff;
-      --text-main: #1e293b;
+      --text-main: #0f172a;
       --text-muted: #64748b;
-      --border: #e2e8f0;
+      --border: #cbd5e1;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -26,10 +26,20 @@
     .container { max-width: 800px; margin: 0 auto; }
 
     header {
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 24px;
-      padding-bottom: 12px;
+      padding-bottom: 16px;
       border-bottom: 2px solid var(--border);
+      text-align: center;
+    }
+    .brand-logo {
+      max-height: 70px;
+      width: auto;
+      margin-bottom: 10px;
+      object-fit: contain;
     }
     header h1 { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
     header p { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
@@ -77,9 +87,10 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
-      background: #f1f5f9;
+      background: #f8fafc;
       padding: 12px;
       border-radius: 8px;
+      border: 1px solid var(--border);
       margin-top: 6px;
     }
     .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -106,15 +117,16 @@
     .btn-success { background: var(--success); }
     .btn-success:hover { background: #15803d; }
     .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border); }
-    .btn-outline:hover { background: #f1f5f9; }
+    .btn-outline:hover { background: #f8fafc; }
 
     /* Summary Card */
     .summary-card {
-      background: #0f172a;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: white;
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     }
     .summary-header {
       display: flex;
@@ -124,8 +136,8 @@
       padding-bottom: 12px;
       margin-bottom: 14px;
     }
-    .summary-plate { font-size: 26px; font-weight: 900; letter-spacing: 1px; }
-    .summary-model { font-size: 14px; color: #94a3b8; }
+    .summary-plate { font-size: 26px; font-weight: 900; letter-spacing: 1.5px; color: #38bdf8; }
+    .summary-model { font-size: 15px; color: #cbd5e1; font-weight: 600; }
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -133,7 +145,7 @@
       margin-bottom: 14px;
     }
     .stat-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 600; }
-    .stat-val { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .stat-val { font-size: 15px; font-weight: 700; margin-top: 2px; }
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -164,7 +176,7 @@
 
     /* QR Result Card */
     #resultCard { display: none; text-align: center; }
-    #qrcode { display: inline-block; margin: 15px 0; padding: 10px; background: white; border-radius: 8px; }
+    #qrcode { display: inline-block; margin: 15px 0; padding: 10px; background: white; border-radius: 8px; border: 1px solid var(--border); }
 
     /* Print Protocol Styling */
     @media print {
@@ -175,9 +187,9 @@
       .summary-card { background: white !important; color: black !important; border: 2px solid #000; padding: 12px; }
       .summary-header { border-color: #000; }
       .summary-plate { font-size: 24px; color: #000; }
-      .summary-model, .stat-label { color: #555 !important; }
+      .summary-model, .stat-label { color: #444 !important; }
       .status-badge { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-      th { background: #eee !important; color: #000 !important; }
+      th { background: #f1f5f9 !important; color: #000 !important; border-color: #000; }
       td { border-color: #ccc !important; }
     }
   </style>
@@ -186,6 +198,8 @@
 
 <div class="container">
   <header>
+    <!-- يمكنك استبدال logo.png برابط أو مسار الشعار الخاص بك -->
+    <img src="logo.png" alt="ASR Bilservice AB" class="brand-logo" onerror="this.style.display='none'">
     <h1>ASR Bilservice AB</h1>
     <p>Auktoriserat Serviceschema & Digital Servicebok</p>
   </header>
@@ -316,7 +330,7 @@
     <div id="qrcode"></div>
     <div class="action-row">
       <button class="btn btn-outline" onclick="window.print()">🖨️ Skriv ut</button>
-      <button class="btn" onclick="openCustomerView()">👁️ Öppna kundvy</button>
+      <button class="btn" onclick="openCustomerView()">👁️️ Öppna kundvy</button>
     </div>
   </div>
 

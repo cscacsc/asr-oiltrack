@@ -31,6 +31,8 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .lang-bar {
       display: flex;
@@ -52,6 +54,11 @@
       border-color: var(--accent-gold);
     }
 
+    .auth-btn-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
     .auth-btn {
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid var(--accent-blue);
@@ -67,6 +74,12 @@
       transition: all 0.2s;
     }
     .auth-btn:hover { background: var(--accent-blue); color: #0f172a; }
+    .btn-archive {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .btn-archive:hover { background: var(--accent-gold); color: #000; }
 
     header {
       text-align: center;
@@ -287,7 +300,7 @@
 
     .workshop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* History Table */
+    /* History & All Vehicles Table */
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     [dir="rtl"] table { text-align: right; }
@@ -395,7 +408,8 @@
       <button class="lang-btn" data-lang="en" onclick="setLanguage('en')" title="English">🇬🇧</button>
       <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')" title="العربية">🇸🇦</button>
     </div>
-    <div>
+    <div class="auth-btn-group">
+      <button id="btnAllRecords" class="auth-btn btn-archive" style="display: none;" onclick="toggleAllVehiclesView()">📋 <span data-i18n="btnAllRecords">Alla bilar & poster</span></button>
       <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
     </div>
   </div>
@@ -451,7 +465,32 @@
 
   <!-- Not Found Alert Box -->
   <div id="noVehicleMsg" class="not-found-card">
-    <div class="not-found-text" id="noVehicleText">⚠️ Inget fordon eller servicehistorik hittades.</div>
+    <div class="not-found-text" id="noVehicleText">⚠️️ Inget fordon eller servicehistorik hittades.</div>
+  </div>
+
+  <!-- All Vehicles & Records Card (Admin Archive) -->
+  <div id="allVehiclesCard" class="card" style="display: none;">
+    <div class="card-title" style="justify-content: space-between;">
+      <span data-i18n="allVehiclesTitle">📋 Alla registrerade bilar & protokoll</span>
+      <button class="btn btn-outline" style="width: auto; padding: 4px 10px; font-size: 11px;" onclick="toggleAllVehiclesView()">✕ <span data-i18n="btnCloseArchive">Stäng arkiv</span></button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="thAllReg">Reg.nr</th>
+            <th data-i18n="thAllCar">Märke / Modell</th>
+            <th data-i18n="thAllOwner">Kund / Ägare</th>
+            <th data-i18n="thAllPhone">Telefon</th>
+            <th data-i18n="thAllTotal">Antal poster</th>
+            <th data-i18n="thAction">Åtgärd</th>
+          </tr>
+        </thead>
+        <tbody id="allVehiclesBody">
+          <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Laddar...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- Admin Form (Hidden until logged in) -->
@@ -779,7 +818,16 @@
       btnCall: "Ring oss",
       btnBook: "Boka tid via WhatsApp",
       bokaMsg: "Hej ASR Bilservice! Jag vill boka tid för service/reparation för min bil med reg.nr",
-      msgNotFound: "⚠️ Inget fordon eller servicehistorik hittades för registreringsnummer"
+      msgNotFound: "⚠️ Inget fordon eller servicehistorik hittades för registreringsnummer",
+      btnAllRecords: "Alla bilar & poster",
+      allVehiclesTitle: "📋 Alla registrerade bilar & protokoll",
+      btnCloseArchive: "Stäng arkiv",
+      thAllReg: "Reg.nr",
+      thAllCar: "Märke / Modell",
+      thAllOwner: "Kund / Ägare",
+      thAllPhone: "Telefon",
+      thAllTotal: "Antal poster",
+      btnOpen: "Öppna"
     },
     en: {
       headerTitle: "Digital Service Book & Protocol",
@@ -823,14 +871,23 @@
       thMechanic: "Mechanic",
       thNext: "Next Service",
       thAction: "Action",
-      stOverdue: "⚠️ Overdue",
+      stOverdue: "⚠️️ Overdue",
       stDue: "⚠️ Due Soon",
       stOk: "✅ Approved (OK)",
       smsMsg: "Hello! Here is your digital service protocol from ASR Bilservice for your vehicle",
       btnCall: "Call Us",
       btnBook: "Book Appointment",
       bokaMsg: "Hello ASR Bilservice! I would like to book a service appointment for vehicle reg.nr",
-      msgNotFound: "⚠️ No vehicle or service history found for registration number"
+      msgNotFound: "⚠️ No vehicle or service history found for registration number",
+      btnAllRecords: "All Vehicles & Records",
+      allVehiclesTitle: "📋 All Registered Vehicles & Records",
+      btnCloseArchive: "Close Archive",
+      thAllReg: "Reg.nr",
+      thAllCar: "Make / Model",
+      thAllOwner: "Customer / Owner",
+      thAllPhone: "Phone",
+      thAllTotal: "Total Records",
+      btnOpen: "Open"
     },
     ar: {
       headerTitle: "سجل الخدمة والفحص الرقمي",
@@ -881,7 +938,16 @@
       btnCall: "اتصل بنا",
       btnBook: "حجز موعد عبر الواتساب",
       bokaMsg: "مرحباً ASR Bilservice، أود حجز موعد صيانة لسيارتي رقم اللوحة",
-      msgNotFound: "⚠️ عذراً، لا يوجد أي مركبة أو سجل صيانة مسجل لرقم السيارة"
+      msgNotFound: "⚠️ عذراً، لا يوجد أي مركبة أو سجل صيانة مسجل لرقم السيارة",
+      btnAllRecords: "كل السيارات والسجلات",
+      allVehiclesTitle: "📋 جميع السيارات المسجلة وسجلات الفحص",
+      btnCloseArchive: "إغلاق الأرشيف",
+      thAllReg: "رقم اللوحة",
+      thAllCar: "الموديل والماركة",
+      thAllOwner: "اسم العميل",
+      thAllPhone: "الهاتف",
+      thAllTotal: "عدد الصيانات",
+      btnOpen: "فتح السجل"
     }
   };
 
@@ -907,7 +973,6 @@
 
     updateWorkshopButtons();
 
-    // تحديث لغة رسالة التنبيه إن كانت ظاهرة حالياً
     if (lastSearchedNotFoundReg) {
       showNotFoundAlert(lastSearchedNotFoundReg);
     }
@@ -954,17 +1019,21 @@
     const adminSection = document.getElementById('adminSection');
     const adminActionRow = document.getElementById('adminActionRow');
     const thActions = document.getElementById('thActions');
+    const btnAllRecords = document.getElementById('btnAllRecords');
 
     if (user) {
       authBtnText.textContent = "Logga ut (" + user.email.split('@')[0] + ")";
       adminSection.style.display = 'block';
       adminActionRow.style.display = 'grid';
+      if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
       if (thActions) thActions.style.display = 'table-cell';
     } else {
       authBtnText.textContent = "Logga in (Mekaniker)";
       adminSection.style.display = 'none';
       adminActionRow.style.display = 'none';
+      if (btnAllRecords) btnAllRecords.style.display = 'none';
       if (thActions) thActions.style.display = 'none';
+      document.getElementById('allVehiclesCard').style.display = 'none';
       cancelEdit();
     }
     if (cachedServices.length > 0) {
@@ -998,6 +1067,78 @@
       closeLoginModal();
       document.getElementById('loginPassword').value = '';
     }
+  }
+
+  // --- ميزة عرض كل السيارات المسجلة بالورشة (الأرشيف الكامل) ---
+  async function toggleAllVehiclesView() {
+    const card = document.getElementById('allVehiclesCard');
+    if (card.style.display === 'block') {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth' });
+    loadAllVehiclesList();
+  }
+
+  async function loadAllVehiclesList() {
+    const tbody = document.getElementById('allVehiclesBody');
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Laddar databas...</td></tr>`;
+
+    const { data: vehicles, error: vErr } = await supabaseClient
+      .from('vehicles')
+      .select('*')
+      .order('reg_nr', { ascending: true });
+
+    const { data: services, error: sErr } = await supabaseClient
+      .from('service_records')
+      .select('reg_nr');
+
+    if (vErr || sErr) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Kunde inte hämta arkivet: ${vErr?.message || sErr?.message}</td></tr>`;
+      return;
+    }
+
+    if (!vehicles || vehicles.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Inga fordon registrerade ännu.</td></tr>`;
+      return;
+    }
+
+    const counts = {};
+    if (services) {
+      services.forEach(s => {
+        counts[s.reg_nr] = (counts[s.reg_nr] || 0) + 1;
+      });
+    }
+
+    const t = translations[currentLang];
+    tbody.innerHTML = '';
+
+    vehicles.forEach(v => {
+      const totalServices = counts[v.reg_nr] || 0;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color: var(--accent-gold); letter-spacing: 1px;">${v.reg_nr}</strong></td>
+        <td>${v.model || '-'} ${v.year_model ? `(${v.year_model})` : ''}</td>
+        <td>${v.customer_name || '-'}</td>
+        <td>${v.customer_phone ? `<a href="tel:${v.customer_phone}" style="color: var(--accent-blue); text-decoration: none;">${v.customer_phone}</a>` : '-'}</td>
+        <td><span class="status-badge" style="background: rgba(56, 189, 248, 0.15); color: var(--accent-blue);">${totalServices}</span></td>
+        <td>
+          <button class="btn btn-gold" style="width: auto; padding: 4px 10px; font-size: 11px;" onclick="selectVehicleFromArchive('${v.reg_nr}')">
+            👁️ ${t.btnOpen}
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function selectVehicleFromArchive(regNr) {
+    document.getElementById('lookupReg').value = regNr;
+    document.getElementById('allVehiclesCard').style.display = 'none';
+    searchVehicle();
+    window.scrollTo({ top: 100, behavior: 'smooth' });
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1053,7 +1194,6 @@
       renderHistory(services);
       preparePrintData(vehicle, services);
     } else {
-      // السيارة غير مسجلة بالورشة إطلاقاً
       document.getElementById('summaryCard').style.display = 'none';
       document.getElementById('historyCard').style.display = 'none';
       lastSearchedNotFoundReg = regNr;
@@ -1137,7 +1277,7 @@
         actionHtml = `
           <td>
             <div class="btn-action-group">
-              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️️</button>
+              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️</button>
               <button class="btn-tbl btn-tbl-del" onclick="deleteServiceRecord('${s.id}')">🗑️</button>
             </div>
           </td>
@@ -1198,20 +1338,17 @@
       return;
     }
 
-    // 1. حذف سجل الصيانة
     const { error } = await supabaseClient.from('service_records').delete().eq('id', recordId);
     if (error) {
       alert("Kunde inte ta bort: " + error.message);
       return;
     }
 
-    // 2. فحص السجلات المتبقية لنفس السيارة
     const { data: remaining } = await supabaseClient
       .from('service_records')
       .select('id')
       .eq('reg_nr', currentReg);
 
-    // 3. إذا لم يتبق أي سجل (0)، يتم حذف السيارة تلقائياً بالكامل
     if (!remaining || remaining.length === 0) {
       await supabaseClient.from('vehicles').delete().eq('reg_nr', currentReg);
       alert("Posten och fordonet har tagits bort helt! / تم حذف السجل ومسح ملف السيارة بالكامل!");

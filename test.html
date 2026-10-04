@@ -109,7 +109,7 @@
       font-size: 34px;
       font-weight: 900;
       letter-spacing: 3px;
-      color: #ffffff;
+      color: var(--accent-gold); /* اللون الذهبي المطلوب */
       margin-bottom: 2px;
     }
     .vehicle-model {
@@ -174,7 +174,6 @@
     .feature-details { flex: 1; }
     .feature-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
     .feature-value { font-size: 15px; font-weight: 800; color: #ffffff; margin-top: 2px; }
-    .feature-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
     /* Filter Grid Badges */
     .filters-list {
@@ -363,10 +362,9 @@
       </div>
     </div>
 
-    <!-- 2. Modern Feature Card: Engine Oil (Real Oil Can Icon) -->
+    <!-- 2. Modern Feature Card: Engine Oil -->
     <div class="feature-card">
       <div class="feature-icon-box icon-oil">
-        <!-- Professional Automotive Motor Oil Can SVG Icon -->
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 11l1.5-1.5c.6-.6.6-1.5 0-2.1l-.9-.9c-.6-.6-1.5-.6-2.1 0L16 8"/>
           <path d="M5 14h14v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7z"/>
@@ -378,11 +376,10 @@
       <div class="feature-details">
         <div class="feature-label" id="lblOilUsed">Motorolja som användes</div>
         <div class="feature-value" id="uOil">---</div>
-        <div class="feature-sub" id="uMechanic">---</div>
       </div>
     </div>
 
-    <!-- 3. Modern Feature Card: Filters & Parts with Custom Icons -->
+    <!-- 3. Modern Feature Card: Filters & Parts -->
     <div class="feature-card" style="flex-direction: column;">
       <div style="display: flex; align-items: center; gap: 14px; width: 100%;">
         <div class="feature-icon-box icon-filter">
@@ -419,7 +416,7 @@
     <div class="section-title">📜 <span id="lblHistory">Servicehistorik</span></div>
     <div id="uHistoryList"></div>
 
-    <!-- 6. Official Workshop Contact Card (Full Workshop Details) -->
+    <!-- 6. Official Workshop Contact Card -->
     <div class="workshop-contact-card">
       <div class="workshop-title">ASR BILSERVICE AB</div>
       
@@ -479,9 +476,7 @@
       partAir: "Luftfilter",
       partCabin: "Kupéfilter",
       partFuel: "Bränslefilter",
-      partSpark: "Tändstift",
-      statusChanged: "Bytt",
-      statusChecked: "Ej bytt"
+      partSpark: "Tändstift"
     },
     en: {
       headerTitle: "Digital Service Book & Protocol",
@@ -503,9 +498,7 @@
       partAir: "Air Filter",
       partCabin: "Cabin Filter",
       partFuel: "Fuel Filter",
-      partSpark: "Spark Plugs",
-      statusChanged: "Replaced",
-      statusChecked: "Not replaced"
+      partSpark: "Spark Plugs"
     },
     ar: {
       headerTitle: "سجل الخدمة والفحص الرقمي",
@@ -527,9 +520,7 @@
       partAir: "فلتر هواء",
       partCabin: "فلتر مكيف",
       partFuel: "فلتر وقود",
-      partSpark: "بواجي / شمعات",
-      statusChanged: "تم الاستبدال",
-      statusChecked: "لم يستبدل"
+      partSpark: "بواجي / شمعات"
     }
   };
 
@@ -557,7 +548,7 @@
 
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
-    const reg = params.get('reg') || 'OOB237';
+    const reg = params.get('reg') || 'MBB93M';
     document.getElementById('testRegInput').value = reg;
     loadPreview(reg);
   });
@@ -594,9 +585,8 @@
       stEl.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
     }
 
-    // Oil Card
+    // Oil Card (بدون اسم التكنيكر)
     document.getElementById('uOil').textContent = latest?.oil_brand_type || 'Kvalitetsolja';
-    document.getElementById('uMechanic').textContent = latest?.mechanic ? `Tekniker: ${latest.mechanic}` : 'ASR Bilservice AB';
 
     // Filters Grid with Individual Icons
     const fGrid = document.getElementById('uFiltersGrid');

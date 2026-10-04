@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="sv" dir="ltr" id="htmlRoot">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASR Bilservice AB - Digital Servicebok (Preview)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --card-bg: #151f32;
+      --card-border: #1e293b;
+      --accent-gold: #f59e0b;
+      --accent-blue: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success-green: #10b981;
+      --warning-orange: #f59e0b;
+      --danger-red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); line-height: 1.5; padding: 16px; display: flex; justify-content: center; }
+    .app-container { width: 100%; max-width: 480px; }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .lang-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .lang-btn.active { border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.15); }
+
+    /* Hero / Header Card */
+    .vehicle-hero {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    .workshop-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .plate-number {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .vehicle-model {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin-bottom: 14px;
+    }
+    
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .status-up-to-date { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid var(--success-green); }
+    .status-due-soon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning-orange); }
+    .status-overdue { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger-red); }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    [dir="rtl"] .hero-meta-grid { text-align: right; }
+    .hero-meta-item small { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .hero-meta-item div { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+
+    /* Modern Feature Cards (Like Video) */
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .feature-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .icon-oil { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .icon-filter { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .icon-next { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+    
+    .feature-details { flex: 1; }
+    .feature-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
+    .feature-value { font-size: 15px; font-weight: 800; color: #ffffff; margin-top: 2px; }
+    .feature-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Replaced Filters Badges */
+    .filters-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .filter-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent-blue);
+    }
+
+    /* History Timeline */
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      margin: 22px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .history-item {
+      background: #111a2c;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .history-date { color: var(--accent-blue); }
+    .history-mileage { color: var(--accent-gold); }
+
+    /* Workshop Footer */
+    .workshop-card {
+      background: #090e1a;
+      border: 1px solid #1e3a8a;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .workshop-name { font-size: 16px; font-weight: 900; color: var(--accent-gold); letter-spacing: 1px; }
+    .btn-contact {
+      display: block;
+      width: 100%;
+      background: var(--success-green);
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">ASR DIGITAL SERVICE</span>
+    <div style="display: flex; gap: 6px;">
+      <button class="lang-btn active" onclick="setLang('sv')">🇸🇪</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧</button>
+      <button class="lang-btn" onclick="setLang('ar')">🇸🇦</button>
+    </div>
+  </div>
+
+  <!-- Search input (For testing preview) -->
+  <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+    <input type="text" id="testRegInput" placeholder="Sök Reg.nr (t.ex. OOB237)" style="flex: 1; padding: 10px; background: #080d1a; border: 1px solid var(--card-border); border-radius: 10px; color: white; text-transform: uppercase;">
+    <button onclick="loadPreview(document.getElementById('testRegInput').value)" style="padding: 10px 18px; background: var(--accent-gold); border: none; border-radius: 10px; font-weight: 800; cursor: pointer;">Sök</button>
+  </div>
+
+  <div id="previewContent" style="display: none;">
+    <!-- 1. Hero Card -->
+    <div class="vehicle-hero">
+      <div class="workshop-badge">ASR BILSERVICE AB</div>
+      <div id="uPlate" class="plate-number">---</div>
+      <div id="uModel" class="vehicle-model">---</div>
+      <div id="uStatus"></div>
+
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item">
+          <small id="lblOwner">Ägare</small>
+          <div id="uOwner">---</div>
+        </div>
+        <div class="hero-meta-item">
+          <small id="lblMileage">Mätarställning</small>
+          <div id="uMileage">---</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Feature Cards (Oil, Filters, Next Service) -->
+    <div class="feature-card">
+      <div class="feature-icon-box icon-oil">🛢️</div>
+      <div class="feature-details">
+        <div class="feature-label" id="lblOilUsed">Motorolja</div>
+        <div class="feature-value" id="uOil">---</div>
+        <div class="feature-sub" id="uMechanic">---</div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-box icon-filter">⚙️</div>
+      <div class="feature-details">
+        <div class="feature-label" id="lblFilters">Utbytta Filter & Delar</div>
+        <div class="filters-tags" id="uFilters"></div>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-box icon-next">📅</div>
+      <div class="feature-details">
+        <div class="feature-label" id="lblNextService">Nästa Rekommenderade Service</div>
+        <div class="feature-value" id="uNextKm">---</div>
+        <div class="feature-sub" id="uNextDate">---</div>
+      </div>
+    </div>
+
+    <!-- 3. Service History -->
+    <div class="section-title">📜 <span id="lblHistory">Servicehistorik</span></div>
+    <div id="uHistoryList"></div>
+
+    <!-- 4. Workshop Card -->
+    <div class="workshop-card">
+      <div class="workshop-name">ASR BILSERVICE AB</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Kummingatan 7I, Angered | 073-725 55 57</div>
+      <a id="btnBoka" href="#" target="_blank" class="btn-contact">💬 <span id="lblBook">Boka tid via WhatsApp</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://xlhbzjmuohosijhibgbo.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_XiOUO8haa_Ko7LYrj30vaw_AsxLztP2";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentLang = 'sv';
+  let activeReg = '';
+
+  const i18n = {
+    sv: {
+      lblOwner: "Ägare",
+      lblMileage: "Mätarställning",
+      lblOilUsed: "Motorolja som användes",
+      lblFilters: "Utbytta Delar & Filter",
+      lblNextService: "Nästa Rekommenderade Service",
+      lblHistory: "Tidigare Servicehistorik",
+      lblBook: "Boka tid via WhatsApp",
+      stOk: "✔ Uppdaterad (OK)",
+      stDue: "⚠ Snart dags",
+      stOverdue: "⚠ Försenad service",
+      noParts: "Inga delar registrerade"
+    },
+    en: {
+      lblOwner: "Owner",
+      lblMileage: "Mileage",
+      lblOilUsed: "Oil Used",
+      lblFilters: "Replaced Filters & Parts",
+      lblNextService: "Next Recommended Service",
+      lblHistory: "Service History",
+      lblBook: "Book Appointment on WhatsApp",
+      stOk: "✔ Up To Date",
+      stDue: "⚠ Due Soon",
+      stOverdue: "⚠ Overdue Service",
+      noParts: "No replaced parts specified"
+    },
+    ar: {
+      lblOwner: "المالك",
+      lblMileage: "العداد الحالي",
+      lblOilUsed: "زيت المحرك المستخدم",
+      lblFilters: "الفلاتر والقطع المستبدلة",
+      lblNextService: "الصيانة القادمة الموصى بها",
+      lblHistory: "سجل الصيانات السابقة",
+      lblBook: "حجز موعد عبر الواتساب",
+      stOk: "✔ الحالة ممتازة (Up To Date)",
+      stDue: "⚠ يقترب موعدها",
+      stOverdue: "⚠ متأخر عن موعد الصيانة",
+      noParts: "لم يتم استبدال فلاتر إضافية"
+    }
+  };
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(lang === 'sv' ? '🇸🇪' : lang === 'en' ? '🇬🇧' : '🇸🇦')));
+    
+    const t = i18n[lang];
+    document.getElementById('lblOwner').textContent = t.lblOwner;
+    document.getElementById('lblMileage').textContent = t.lblMileage;
+    document.getElementById('lblOilUsed').textContent = t.lblOilUsed;
+    document.getElementById('lblFilters').textContent = t.lblFilters;
+    document.getElementById('lblNextService').textContent = t.lblNextService;
+    document.getElementById('lblHistory').textContent = t.lblHistory;
+    document.getElementById('lblBook').textContent = t.lblBook;
+
+    if (activeReg) loadPreview(activeReg);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const reg = params.get('reg') || 'OOB237';
+    document.getElementById('testRegInput').value = reg;
+    loadPreview(reg);
+  });
+
+  async function loadPreview(regNr) {
+    if (!regNr) return;
+    activeReg = regNr.trim().toUpperCase();
+
+    const { data: vehicle } = await supabaseClient.from('vehicles').select('*').eq('reg_nr', activeReg).maybeSingle();
+    const { data: services } = await supabaseClient.from('service_records').select('*').eq('reg_nr', activeReg).order('service_date', { ascending: false });
+
+    if (!vehicle && (!services || services.length === 0)) {
+      alert("Fordonet finns inte i databasen.");
+      return;
+    }
+
+    document.getElementById('previewContent').style.display = 'block';
+    const latest = services && services.length > 0 ? services[0] : null;
+    const t = i18n[currentLang];
+
+    document.getElementById('uPlate').textContent = activeReg;
+    document.getElementById('uModel').textContent = (vehicle?.model || '') + (vehicle?.year_model ? ` (${vehicle.year_model})` : '');
+    document.getElementById('uOwner').textContent = vehicle?.customer_name || 'Privatkund';
+    document.getElementById('uMileage').textContent = latest?.mileage ? `${latest.mileage} km` : '---';
+
+    // Status Pill
+    const stEl = document.getElementById('uStatus');
+    if (latest && latest.next_service_date) {
+      const diff = Math.ceil((new Date(latest.next_service_date) - new Date()) / (1000 * 60 * 60 * 24));
+      if (diff < 0) stEl.innerHTML = `<span class="status-pill status-overdue">${t.stOverdue}</span>`;
+      else if (diff <= 30) stEl.innerHTML = `<span class="status-pill status-due-soon">${t.stDue}</span>`;
+      else stEl.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
+    } else {
+      stEl.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
+    }
+
+    // Oil Card
+    document.getElementById('uOil').textContent = latest?.oil_brand_type || 'Kvalitetsolja';
+    document.getElementById('uMechanic').textContent = latest?.mechanic ? `Tekniker: ${latest.mechanic}` : 'ASR Bilservice';
+
+    // Filters Card
+    const fContainer = document.getElementById('uFilters');
+    fContainer.innerHTML = '';
+    const parts = [];
+    if (latest?.oil_filter) parts.push("Oljefilter");
+    if (latest?.air_filter) parts.push("Luftfilter");
+    if (latest?.cabin_filter) parts.push("Kupéfilter");
+    if (latest?.fuel_filter) parts.push("Bränslefilter");
+    if (latest?.spark_plugs) parts.push("Tändstift");
+
+    if (parts.length > 0) {
+      parts.forEach(p => {
+        const tag = document.createElement('span');
+        tag.className = 'filter-tag';
+        tag.textContent = '✔ ' + p;
+        fContainer.appendChild(tag);
+      });
+    } else {
+      fContainer.innerHTML = `<span style="font-size: 12px; color: var(--text-muted);">${t.noParts}</span>`;
+    }
+
+    // Next Service Card
+    document.getElementById('uNextKm').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
+    document.getElementById('uNextDate').textContent = latest?.next_service_date ? `Senast: ${latest.next_service_date}` : '---';
+
+    // WhatsApp Link
+    document.getElementById('btnBoka').href = `https://wa.me/46737255557?text=Hej ASR Bilservice! Jag vill boka service för ${activeReg}`;
+
+    // History Timeline
+    const hContainer = document.getElementById('uHistoryList');
+    hContainer.innerHTML = '';
+    if (services) {
+      services.forEach(s => {
+        const hCard = document.createElement('div');
+        hCard.className = 'history-item';
+        hCard.innerHTML = `
+          <div class="history-header">
+            <span class="history-date">📅 ${s.service_date || ''}</span>
+            <span class="history-mileage">${s.mileage || ''} km</span>
+          </div>
+          <div style="font-size: 13px; font-weight: 700; color: #fff;">${s.oil_brand_type || ''}</div>
+          ${s.notes ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${s.notes}</div>` : ''}
+        `;
+        hContainer.appendChild(hCard);
+      });
+    }
+  }
+</script>
+</body>
+</html>

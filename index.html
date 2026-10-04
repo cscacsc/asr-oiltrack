@@ -8,9 +8,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
+      --bg: #0b1120;
+      --card-bg: #151f32;
+      --card-border: #1e293b;
       --accent-gold: #f59e0b;
       --accent-blue: #38bdf8;
       --text-main: #f8fafc;
@@ -18,7 +18,7 @@
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --input-bg: #0b1120;
+      --input-bg: #080d1a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -42,16 +42,17 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 18px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 16px;
       line-height: 1.2;
       cursor: pointer;
       transition: all 0.2s;
     }
     .lang-btn.active, .lang-btn:hover {
-      background: var(--accent-gold);
+      background: rgba(245, 158, 11, 0.15);
       border-color: var(--accent-gold);
+      color: var(--accent-gold);
     }
 
     .auth-btn-group {
@@ -64,7 +65,7 @@
       border: 1px solid var(--accent-blue);
       color: var(--accent-blue);
       padding: 6px 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -73,7 +74,7 @@
       gap: 6px;
       transition: all 0.2s;
     }
-    .auth-btn:hover { background: var(--accent-blue); color: #0f172a; }
+    .auth-btn:hover { background: var(--accent-blue); color: #0b1120; }
     .btn-archive {
       background: rgba(245, 158, 11, 0.15);
       border: 1px solid var(--accent-gold);
@@ -103,11 +104,11 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       border: 1px solid var(--card-border);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
 
     .card-title {
@@ -162,7 +163,7 @@
       justify-content: center;
       padding: 12px 18px;
       background: var(--accent-blue);
-      color: #0f172a;
+      color: #0b1120;
       font-size: 14px;
       font-weight: 800;
       border-radius: 8px;
@@ -180,62 +181,126 @@
     .btn-outline { background: transparent; color: white; border: 1px solid var(--card-border); }
     .btn-outline:hover { background: rgba(255,255,255,0.05); }
 
-    /* Summary Card */
-    .summary-card {
-      background: #090d16;
+    /* Modern Vehicle Hero Card */
+    .vehicle-hero {
+      background: linear-gradient(180deg, #1b263b 0%, #0d1527 100%);
       border: 1px solid var(--card-border);
-      color: white;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .summary-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 14px;
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
       margin-bottom: 16px;
-      flex-wrap: wrap;
-      gap: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
     }
-    .summary-plate { font-size: 28px; font-weight: 900; letter-spacing: 2px; color: var(--accent-gold); }
-    .summary-model { font-size: 15px; color: var(--accent-blue); font-weight: 600; }
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 16px;
+    .plate-number {
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: var(--accent-gold);
+      margin-bottom: 2px;
     }
-    .stat-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
-    .stat-val { font-size: 15px; font-weight: 700; margin-top: 2px; }
-    
-    .status-badge {
+    .vehicle-model {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent-blue);
+      margin-bottom: 14px;
+    }
+    .status-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 12.5px;
       font-weight: 800;
       text-transform: uppercase;
     }
-    .status-ok { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid var(--success); }
-    .status-due { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid var(--warning); }
-    .status-overdue { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid var(--danger); }
+    .status-up-to-date { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid var(--success); }
+    .status-due-soon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning); }
+    .status-overdue { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger); }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-align: left;
+    }
+    [dir="rtl"] .hero-meta-grid { text-align: right; }
+    .hero-meta-item small { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+    .hero-meta-item div { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-top: 2px; }
+
+    /* Modern Feature Dashboard Cards */
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .feature-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-oil { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .icon-filter { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+    .icon-next { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .feature-details { flex: 1; }
+    .feature-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
+    .feature-value { font-size: 15px; font-weight: 800; color: #ffffff; margin-top: 2px; }
+    .feature-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Filter Grid Badges */
+    .filters-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .filter-checked {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+    .filter-unchecked {
+      background: rgba(148, 163, 184, 0.05);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      color: #64748b;
+    }
 
     .action-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 10px;
-      margin-top: 15px;
+      margin-top: 16px;
     }
 
     /* Workshop Info Card for Customer */
     .workshop-contact-card {
       background: #0b1329;
       border: 1px solid #1e3a8a;
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 22px;
       margin-top: 20px;
       text-align: center;
@@ -259,8 +324,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.04);
       transition: all 0.2s ease;
       width: 100%;
@@ -274,7 +339,7 @@
     .social-row {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 16px;
       flex-wrap: wrap;
     }
@@ -282,7 +347,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       background: #1e293b;
       border: 1px solid var(--card-border);
       border-radius: 8px;
@@ -304,7 +369,7 @@
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     [dir="rtl"] table { text-align: right; }
-    th { background: #0b1120; padding: 12px 10px; border-bottom: 2px solid var(--card-border); color: var(--accent-blue); font-size: 11px; text-transform: uppercase; }
+    th { background: #080d1a; padding: 12px 10px; border-bottom: 2px solid var(--card-border); color: var(--accent-blue); font-size: 11px; text-transform: uppercase; }
     td { padding: 12px 10px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
 
     .btn-action-group {
@@ -422,41 +487,6 @@
     <p data-i18n="headerSub">Auktoriserad Verkstad & Serviceportal</p>
   </header>
 
-  <!-- Summary Card -->
-  <div id="summaryCard" class="summary-card" style="display: none;">
-    <div class="summary-header">
-      <div>
-        <div id="sumReg" class="summary-plate">---</div>
-        <div id="sumModel" class="summary-model">---</div>
-      </div>
-      <div id="sumStatus"></div>
-    </div>
-    <div class="summary-grid">
-      <div>
-        <div class="stat-label" data-i18n="lblOwner">Ägare</div>
-        <div id="sumOwner" class="stat-val">---</div>
-      </div>
-      <div>
-        <div class="stat-label" data-i18n="lblMileage">Mätarställning</div>
-        <div id="sumMileage" class="stat-val">---</div>
-      </div>
-      <div>
-        <div class="stat-label" data-i18n="lblYearVin">Årsmodell / VIN</div>
-        <div id="sumVin" class="stat-val">---</div>
-      </div>
-      <div>
-        <div class="stat-label" data-i18n="lblVisits">Servicehistorik</div>
-        <div id="sumVisits" class="stat-val">0</div>
-      </div>
-    </div>
-
-    <div id="adminActionRow" class="action-row" style="display: none;">
-      <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
-      <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
-      <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
-    </div>
-  </div>
-
   <!-- Search Vehicle (Always available) -->
   <div id="searchBar" class="card" style="display: flex; gap: 10px;">
     <input type="text" id="lookupReg" data-i18n-ph="phSearch" placeholder="Sök Reg.nr (t.ex. OOB237)" style="text-transform: uppercase; flex: 1;">
@@ -465,7 +495,7 @@
 
   <!-- Not Found Alert Box -->
   <div id="noVehicleMsg" class="not-found-card">
-    <div class="not-found-text" id="noVehicleText">⚠️️ Inget fordon eller servicehistorik hittades.</div>
+    <div class="not-found-text" id="noVehicleText">⚠ Inget fordon eller servicehistorik hittades.</div>
   </div>
 
   <!-- All Vehicles & Records Card (Admin Archive) -->
@@ -490,6 +520,91 @@
           <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Laddar...</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Vehicle Overview Section (Modern Design) -->
+  <div id="vehicleOverviewContainer" style="display: none;">
+    <!-- 1. Hero Card -->
+    <div class="vehicle-hero">
+      <div id="sumReg" class="plate-number">---</div>
+      <div id="sumModel" class="vehicle-model">---</div>
+      <div id="sumStatus"></div>
+
+      <div class="hero-meta-grid">
+        <div class="hero-meta-item">
+          <small data-i18n="lblOwner">Ägare</small>
+          <div id="sumOwner">---</div>
+        </div>
+        <div class="hero-meta-item">
+          <small data-i18n="lblMileage">Mätarställning</small>
+          <div id="sumMileage">---</div>
+        </div>
+        <div class="hero-meta-item">
+          <small data-i18n="lblYearVin">Årsmodell / VIN</small>
+          <div id="sumVin">---</div>
+        </div>
+        <div class="hero-meta-item">
+          <small data-i18n="lblVisits">Servicehistorik</small>
+          <div id="sumVisits">0</div>
+        </div>
+      </div>
+
+      <div id="adminActionRow" class="action-row" style="display: none;">
+        <button class="btn btn-outline" onclick="triggerPrint()">🖨️ <span data-i18n="btnPrint">Skriv ut protokoll</span></button>
+        <a id="btnSendWhatsapp" href="#" target="_blank" class="btn btn-success">🟢 WhatsApp</a>
+        <a id="btnSendSms" href="#" class="btn btn-outline">💬 SMS</a>
+      </div>
+    </div>
+
+    <!-- 2. Feature Card: Engine Oil (Professional Oil Can SVG) -->
+    <div class="feature-card">
+      <div class="feature-icon-box icon-oil">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 11l1.5-1.5c.6-.6.6-1.5 0-2.1l-.9-.9c-.6-.6-1.5-.6-2.1 0L16 8"/>
+          <path d="M5 14h14v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7z"/>
+          <path d="M5 14l3.5-7.5A2 2 0 0 1 10.3 5h3.4a2 2 0 0 1 1.8 1.5L19 14"/>
+          <path d="M10 5V2"/>
+          <circle cx="12" cy="18.5" r="1.5" fill="#f59e0b"/>
+        </svg>
+      </div>
+      <div class="feature-details">
+        <div class="feature-label" data-i18n="lblOilUsed">Motorolja som användes</div>
+        <div class="feature-value" id="cardOilVal">---</div>
+      </div>
+    </div>
+
+    <!-- 3. Feature Card: Filters & Parts with Custom Icons -->
+    <div class="feature-card" style="flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 14px; width: 100%;">
+        <div class="feature-icon-box icon-filter">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="feature-label" data-i18n="lblChecklist">Utbytta Delar & Filter</div>
+          <div class="feature-sub" data-i18n="lblFiltersDesc">Inspekterade och bytta enligt specifikation</div>
+        </div>
+      </div>
+      <div class="filters-list" id="filtersGrid"></div>
+    </div>
+
+    <!-- 4. Feature Card: Next Recommended Service -->
+    <div class="feature-card">
+      <div class="feature-icon-box icon-next">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="feature-details">
+        <div class="feature-label" data-i18n="lblNextServiceBox">Nästa Rekommenderade Service</div>
+        <div class="feature-value" id="cardNextMileageVal">---</div>
+        <div class="feature-sub" id="cardNextDateVal">---</div>
+      </div>
     </div>
   </div>
 
@@ -790,7 +905,10 @@
       lblCurMileage: "Mätarställning (km) *",
       lblMechanic: "Mekaniker",
       lblOil: "Motorolja (Märke, Viskositet, Mängd)",
-      lblChecklist: "Utbytta delar / Servicepunkter",
+      lblChecklist: "Utbytta Delar & Filter",
+      lblFiltersDesc: "Inspekterade och bytta enligt specifikation",
+      lblOilUsed: "Motorolja som användes",
+      lblNextServiceBox: "Nästa Rekommenderade Service",
       partOilFilter: "Oljefilter",
       partAirFilter: "Luftfilter",
       partCabinFilter: "Kupéfilter",
@@ -813,7 +931,7 @@
       thAction: "Åtgärd",
       stOverdue: "⚠️ Försenad",
       stDue: "⚠️ Snart dags",
-      stOk: "✅ Godkänd (OK)",
+      stOk: "✔ Uppdaterad (OK)",
       smsMsg: "Hej! Här är ditt digitala serviceprotokoll från ASR Bilservice för din bil",
       btnCall: "Ring oss",
       btnBook: "Boka tid via WhatsApp",
@@ -850,7 +968,10 @@
       lblCurMileage: "Mileage (km) *",
       lblMechanic: "Mechanic",
       lblOil: "Engine Oil (Brand, Grade, Qty)",
-      lblChecklist: "Replaced Parts / Checkpoints",
+      lblChecklist: "Replaced Parts & Filters",
+      lblFiltersDesc: "Inspected and replaced according to specification",
+      lblOilUsed: "Engine Oil Used",
+      lblNextServiceBox: "Next Recommended Service",
       partOilFilter: "Oil Filter",
       partAirFilter: "Air Filter",
       partCabinFilter: "Cabin Filter",
@@ -871,9 +992,9 @@
       thMechanic: "Mechanic",
       thNext: "Next Service",
       thAction: "Action",
-      stOverdue: "⚠️️ Overdue",
+      stOverdue: "⚠️ Overdue",
       stDue: "⚠️ Due Soon",
-      stOk: "✅ Approved (OK)",
+      stOk: "✔ Up To Date",
       smsMsg: "Hello! Here is your digital service protocol from ASR Bilservice for your vehicle",
       btnCall: "Call Us",
       btnBook: "Book Appointment",
@@ -911,6 +1032,9 @@
       lblMechanic: "اسم الفني",
       lblOil: "زيت المحرك (النوع، اللزوجة، الكمية)",
       lblChecklist: "الفلاتر والقطع المستبدلة",
+      lblFiltersDesc: "تم الفحص والاستبدال حسب معايير الصانع",
+      lblOilUsed: "زيت المحرك المستخدم",
+      lblNextServiceBox: "الصيانة القادمة الموصى بها",
       partOilFilter: "فلتر زيت",
       partAirFilter: "فلتر هواء",
       partCabinFilter: "فلتر مكيف",
@@ -933,7 +1057,7 @@
       thAction: "إجراء",
       stOverdue: "⚠️ متأخر عن الموعد",
       stDue: "⚠️ يقترب موعدها",
-      stOk: "✅ الحالة ممتازة (OK)",
+      stOk: "✔ الحالة ممتازة (Up To Date)",
       smsMsg: "مرحباً! هذا هو بروتوكول الصيانة الرقمي لسيارتك من ورشة ASR Bilservice",
       btnCall: "اتصل بنا",
       btnBook: "حجز موعد عبر الواتساب",
@@ -1194,7 +1318,7 @@
       renderHistory(services);
       preparePrintData(vehicle, services);
     } else {
-      document.getElementById('summaryCard').style.display = 'none';
+      document.getElementById('vehicleOverviewContainer').style.display = 'none';
       document.getElementById('historyCard').style.display = 'none';
       lastSearchedNotFoundReg = regNr;
       showNotFoundAlert(regNr);
@@ -1202,8 +1326,8 @@
   }
 
   function renderSummary(vehicle, services) {
-    const sumCard = document.getElementById('summaryCard');
-    sumCard.style.display = 'block';
+    const overviewContainer = document.getElementById('vehicleOverviewContainer');
+    overviewContainer.style.display = 'block';
 
     const latest = services && services.length > 0 ? services[0] : null;
     const t = translations[currentLang];
@@ -1215,6 +1339,7 @@
     document.getElementById('sumVin').textContent = vehicle?.vin || (vehicle?.year_model ? `${vehicle.year_model}` : '---');
     document.getElementById('sumVisits').textContent = services ? services.length : 0;
 
+    // Status Pill
     const statusDiv = document.getElementById('sumStatus');
     if (latest && latest.next_service_date) {
       const today = new Date();
@@ -1222,16 +1347,45 @@
       const diffDays = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
 
       if (diffDays < 0) {
-        statusDiv.innerHTML = `<span class="status-badge status-overdue">${t.stOverdue} (${Math.abs(diffDays)} d)</span>`;
+        statusDiv.innerHTML = `<span class="status-pill status-overdue">${t.stOverdue} (${Math.abs(diffDays)} d)</span>`;
       } else if (diffDays <= 30) {
-        statusDiv.innerHTML = `<span class="status-badge status-due">${t.stDue} (${diffDays} d)</span>`;
+        statusDiv.innerHTML = `<span class="status-pill status-due-soon">${t.stDue} (${diffDays} d)</span>`;
       } else {
-        statusDiv.innerHTML = `<span class="status-badge status-ok">${t.stOk}</span>`;
+        statusDiv.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
       }
     } else {
-      statusDiv.innerHTML = `<span class="status-badge status-ok">${t.stOk}</span>`;
+      statusDiv.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
     }
 
+    // Modern Cards Population
+    document.getElementById('cardOilVal').textContent = latest?.oil_brand_type || (currentLang === 'ar' ? 'زيت محرك معتمد' : 'Kvalitetsmotorolja');
+
+    // Filters Grid with Individual Icons
+    const fGrid = document.getElementById('filtersGrid');
+    fGrid.innerHTML = '';
+    const filterItems = [
+      { name: t.partOilFilter, icon: '🛢️', active: latest?.oil_filter },
+      { name: t.partAirFilter, icon: '💨', active: latest?.air_filter },
+      { name: t.partCabinFilter, icon: '❄️', active: latest?.cabin_filter },
+      { name: t.partFuelFilter, icon: '⛽', active: latest?.fuel_filter },
+      { name: t.partSparkPlugs, icon: '⚡', active: latest?.spark_plugs }
+    ];
+
+    filterItems.forEach(item => {
+      const box = document.createElement('div');
+      box.className = `filter-item ${item.active ? 'filter-checked' : 'filter-unchecked'}`;
+      box.innerHTML = `
+        <span style="font-size: 14px;">${item.icon}</span>
+        <span>${item.name}</span>
+        <span style="margin-left: auto; font-size: 11px;">${item.active ? '✔' : '—'}</span>
+      `;
+      fGrid.appendChild(box);
+    });
+
+    document.getElementById('cardNextMileageVal').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
+    document.getElementById('cardNextDateVal').textContent = latest?.next_service_date ? `${latest.next_service_date}` : '---';
+
+    // WhatsApp / SMS Communication
     const targetUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
     const msg = encodeURIComponent(`${t.smsMsg} (${currentReg}): ${targetUrl}`);
     
@@ -1260,7 +1414,7 @@
 
     services.forEach(s => {
       const parts = [];
-      if (s.oil_brand_type) parts.push(`🛢️ ${s.oil_brand_type}`);
+      if (s.oil_brand_type) parts.push(`🛢️️ ${s.oil_brand_type}`);
       if (s.oil_filter) parts.push(t.partOilFilter);
       if (s.air_filter) parts.push(t.partAirFilter);
       if (s.cabin_filter) parts.push(t.partCabinFilter);
@@ -1356,7 +1510,7 @@
       if (document.getElementById('editRecordId').value == recordId) {
         cancelEdit();
       }
-      document.getElementById('summaryCard').style.display = 'none';
+      document.getElementById('vehicleOverviewContainer').style.display = 'none';
       document.getElementById('historyCard').style.display = 'none';
       document.getElementById('lookupReg').value = '';
       currentReg = '';

@@ -495,7 +495,7 @@
 
   <!-- Not Found Alert Box -->
   <div id="noVehicleMsg" class="not-found-card">
-    <div class="not-found-text" id="noVehicleText">⚠ Inget fordon eller servicehistorik hittades.</div>
+    <div class="not-found-text" id="noVehicleText">⚠️ Inget fordon eller servicehistorik hittades.</div>
   </div>
 
   <!-- All Vehicles & Records Card (Admin Archive) -->
@@ -620,6 +620,10 @@
         <div class="form-group">
           <label data-i18n="lblReg">Registreringsnummer *</label>
           <input type="text" id="regNr" required placeholder="T.ex. OOB237" style="text-transform: uppercase;">
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblServiceDate">Servicedatum *</label>
+          <input type="date" id="serviceDate" required>
         </div>
         <div class="form-group">
           <label data-i18n="lblModel">Bilmärke & Modell</label>
@@ -897,6 +901,7 @@
       formTitle: "📝 Registrera Service",
       formTitleEdit: "✏️ Redigera Service",
       lblReg: "Registreringsnummer *",
+      lblServiceDate: "Servicedatum *",
       lblModel: "Bilmärke & Modell",
       lblYear: "Årsmodell",
       lblVin: "Chassinummer (VIN)",
@@ -960,6 +965,7 @@
       formTitle: "📝 New Service Record",
       formTitleEdit: "✏️ Edit Service",
       lblReg: "Registration Number *",
+      lblServiceDate: "Service Date *",
       lblModel: "Car Make & Model",
       lblYear: "Model Year",
       lblVin: "Chassis Number (VIN)",
@@ -1023,6 +1029,7 @@
       formTitle: "📝 تسجيل صيانة جديدة",
       formTitleEdit: "✏️ تعديل بيانات الصيانة",
       lblReg: "رقم اللوحة *",
+      lblServiceDate: "تاريخ الصيانة *",
       lblModel: "ماركة وموديل السيارة",
       lblYear: "سنة الصنع",
       lblVin: "رقم الشاسيه (VIN)",
@@ -1151,6 +1158,10 @@
       adminActionRow.style.display = 'grid';
       if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
       if (thActions) thActions.style.display = 'table-cell';
+      // ضبط تاريخ اليوم تلقائياً كقيمة افتراضية
+      if (!document.getElementById('serviceDate').value) {
+        document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+      }
     } else {
       authBtnText.textContent = "Logga in (Mekaniker)";
       adminSection.style.display = 'none';
@@ -1268,6 +1279,9 @@
   window.addEventListener('DOMContentLoaded', () => {
     initAuth();
     updateWorkshopButtons();
+    // ضبط تاريخ اليوم كافتراضي
+    document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+    
     const params = new URLSearchParams(window.location.search);
     const regParam = params.get('reg');
     
@@ -1414,7 +1428,7 @@
 
     services.forEach(s => {
       const parts = [];
-      if (s.oil_brand_type) parts.push(`🛢️️ ${s.oil_brand_type}`);
+      if (s.oil_brand_type) parts.push(`🛢 ${s.oil_brand_type}`);
       if (s.oil_filter) parts.push(t.partOilFilter);
       if (s.air_filter) parts.push(t.partAirFilter);
       if (s.cabin_filter) parts.push(t.partCabinFilter);
@@ -1459,6 +1473,7 @@
     if (!s) return;
 
     document.getElementById('editRecordId').value = s.id;
+    document.getElementById('serviceDate').value = s.service_date ? s.service_date.substring(0, 10) : '';
     document.getElementById('mileage').value = s.mileage || '';
     document.getElementById('mechanic').value = s.mechanic || '';
     document.getElementById('oilDetails').value = s.oil_brand_type || '';
@@ -1481,6 +1496,7 @@
 
   function cancelEdit() {
     document.getElementById('editRecordId').value = '';
+    document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
     const t = translations[currentLang];
     document.getElementById('formTitleText').textContent = t.formTitle;
     document.getElementById('btnSubmitForm').textContent = t.btnSave;
@@ -1577,6 +1593,7 @@
     e.preventDefault();
     const reg = document.getElementById('regNr').value.trim().toUpperCase();
     const editId = document.getElementById('editRecordId').value;
+    const inputDate = document.getElementById('serviceDate').value || new Date().toISOString().substring(0, 10);
 
     const vehiclePayload = {
       reg_nr: reg,
@@ -1591,6 +1608,7 @@
 
     const servicePayload = {
       reg_nr: reg,
+      service_date: inputDate,
       mileage: parseInt(document.getElementById('mileage').value) || 0,
       mechanic: document.getElementById('mechanic').value.trim(),
       oil_brand_type: document.getElementById('oilDetails').value.trim(),
@@ -1610,7 +1628,6 @@
       const { error } = await supabaseClient.from('service_records').update(servicePayload).eq('id', editId);
       resultError = error;
     } else {
-      servicePayload.service_date = new Date().toISOString().substring(0, 10);
       const { error } = await supabaseClient.from('service_records').insert([servicePayload]);
       resultError = error;
     }

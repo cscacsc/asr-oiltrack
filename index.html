@@ -229,7 +229,7 @@
     }
     [dir="rtl"] .hero-meta-grid { text-align: right; }
     .hero-meta-item small { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-    .hero-meta-item div { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-top: 2px; }
+    .hero-meta-item div { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-top: 2px; word-break: break-all; }
 
     /* Modern Feature Dashboard Cards */
     .feature-card {
@@ -365,41 +365,74 @@
 
     .workshop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* History Table */
+    /* Modern Responsive Timeline History (Mobile Cards / Desktop Table) */
+    .history-card-item {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+    .h-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .h-card-date { color: var(--accent-blue); font-weight: 800; font-size: 13px; }
+    .h-card-mileage { color: var(--accent-gold); font-weight: 900; font-size: 15px; }
+    
+    .history-oil-box {
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .history-parts-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .badge-part {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-blue);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .h-card-next {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      border-top: 1px dashed rgba(255,255,255,0.08);
+      padding-top: 8px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    /* Archive Table */
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     [dir="rtl"] table { text-align: right; }
     th { background: #080d1a; padding: 12px 10px; border-bottom: 2px solid var(--card-border); color: var(--accent-blue); font-size: 11px; text-transform: uppercase; }
     td { padding: 12px 10px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
 
-    /* Separated Oil & Parts in History */
-    .history-oil-box {
-      font-weight: 700;
-      color: var(--accent-gold);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-bottom: 6px;
-    }
-    .history-parts-box {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-    .badge-part {
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: var(--accent-blue);
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
     .btn-action-group {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
+      margin-top: 8px;
     }
     .btn-tbl {
       padding: 4px 8px;
@@ -464,7 +497,8 @@
       .modal-backdrop { display: none !important; }
       #printProtocol { display: block !important; width: 100%; max-width: 210mm; margin: 0 auto; padding: 12mm 18mm; background: #ffffff; }
       .p-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0f172a; padding-bottom: 14px; margin-bottom: 20px; }
-      .p-logo-title { font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #0f172a; }
+      .p-logo-img { max-height: 45px; width: auto; display: block; margin-bottom: 8px; object-fit: contain; }
+      .p-logo-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: #0f172a; }
       .p-logo-sub { font-size: 11px; font-weight: 700; color: #475569; margin-top: 2px; }
       .p-company-details { font-size: 10.5px; color: #334155; margin-top: 6px; line-height: 1.5; }
       .p-meta { text-align: right; font-size: 11px; color: #334155; line-height: 1.5; }
@@ -563,7 +597,7 @@
           <div id="sumMileage">---</div>
         </div>
         <div class="hero-meta-item">
-          <small data-i18n="lblYearVin">Årsmodell / VIN</small>
+          <small data-i18n="lblVinOnly">Chassinummer (VIN)</small>
           <div id="sumVin">---</div>
         </div>
         <div class="hero-meta-item">
@@ -727,24 +761,10 @@
     </div>
   </div>
 
-  <!-- History Table with Edit & Delete Actions -->
+  <!-- Modern Timeline History (Cards on mobile) -->
   <div id="historyCard" class="card" style="display: none;">
     <div class="card-title" data-i18n="historyTitle">📜 Servicehistorik</div>
-    <div class="table-container">
-      <table id="historyTable">
-        <thead>
-          <tr>
-            <th data-i18n="thDate">Datum</th>
-            <th data-i18n="thMileage">Mätare</th>
-            <th data-i18n="thParts">Olja & Delar</th>
-            <th data-i18n="thMechanic">Mekaniker</th>
-            <th data-i18n="thNext">Nästa service</th>
-            <th id="thActions" style="display: none;">Åtgärd</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
+    <div id="historyListContainer"></div>
   </div>
 
   <!-- Workshop Info Card -->
@@ -802,6 +822,7 @@
 <div id="printProtocol">
   <div class="p-header">
     <div>
+      <img src="logo.png" alt="ASR Bilservice AB" class="p-logo-img" onerror="this.style.display='none'">
       <div class="p-logo-title">ASR BILSERVICE AB</div>
       <div class="p-logo-sub">AUKTORISERAT SERVICEPROTOKOLL & BILVERKSTAD</div>
       <div class="p-company-details">
@@ -916,7 +937,7 @@
       headerSub: "Auktoriserad Verkstad & Serviceportal",
       lblOwner: "Ägare",
       lblMileage: "Mätarställning",
-      lblYearVin: "Årsmodell / VIN",
+      lblVinOnly: "Chassinummer (VIN)",
       lblVisits: "Servicehistorik",
       btnPrint: "Skriv ut protokoll",
       phSearch: "Sök Reg.nr (t.ex. OOB237)",
@@ -981,7 +1002,7 @@
       headerSub: "Authorized Workshop & Service Portal",
       lblOwner: "Owner",
       lblMileage: "Current Mileage",
-      lblYearVin: "Year / VIN",
+      lblVinOnly: "Chassis Number (VIN)",
       lblVisits: "Total Services",
       btnPrint: "Print Protocol",
       phSearch: "Search Reg.nr (e.g. OOB237)",
@@ -1046,7 +1067,7 @@
       headerSub: "الورشة المعتمدة وبوابة الصيانة",
       lblOwner: "المالك",
       lblMileage: "العداد الحالي",
-      lblYearVin: "سنة الصنع / الشاسيه",
+      lblVinOnly: "رقم الشاسيه (VIN)",
       lblVisits: "عدد مرات الصيانة",
       btnPrint: "طباعة التقرير الرسمي",
       phSearch: "ابحث برقم اللوحة (مثلاً OOB237)",
@@ -1160,7 +1181,6 @@
     document.getElementById('wsBokaBtn').href = `https://wa.me/${WORKSHOP_WHATSAPP}?text=${bookMsg}`;
   }
 
-  // --- إدارة تسجيل الدخول وصلاحيات المسؤول ---
   async function initAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     handleAuthState(session ? session.user : null);
@@ -1175,7 +1195,6 @@
     const authBtnText = document.getElementById('authBtnText');
     const adminSection = document.getElementById('adminSection');
     const adminActionRow = document.getElementById('adminActionRow');
-    const thActions = document.getElementById('thActions');
     const btnAllRecords = document.getElementById('btnAllRecords');
 
     if (user) {
@@ -1183,7 +1202,6 @@
       adminSection.style.display = 'block';
       adminActionRow.style.display = 'grid';
       if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
-      if (thActions) thActions.style.display = 'table-cell';
       if (!document.getElementById('serviceDate').value) {
         document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
       }
@@ -1192,7 +1210,6 @@
       adminSection.style.display = 'none';
       adminActionRow.style.display = 'none';
       if (btnAllRecords) btnAllRecords.style.display = 'none';
-      if (thActions) thActions.style.display = 'none';
       document.getElementById('allVehiclesCard').style.display = 'none';
       cancelEdit();
     }
@@ -1229,7 +1246,6 @@
     }
   }
 
-  // --- ميزة عرض كل السيارات المسجلة بالورشة (الأرشيف الكامل) ---
   async function toggleAllVehiclesView() {
     const card = document.getElementById('allVehiclesCard');
     if (card.style.display === 'block') {
@@ -1374,7 +1390,7 @@
     document.getElementById('sumModel').textContent = (vehicle?.model || '') + (vehicle?.year_model ? ` (${vehicle.year_model})` : '');
     document.getElementById('sumOwner').textContent = vehicle?.customer_name || (currentLang === 'ar' ? 'عميل' : 'Customer');
     document.getElementById('sumMileage').textContent = latest?.mileage ? `${latest.mileage} km` : '---';
-    document.getElementById('sumVin').textContent = vehicle?.vin || (vehicle?.year_model ? `${vehicle.year_model}` : '---');
+    document.getElementById('sumVin').textContent = vehicle?.vin || '---';
     document.getElementById('sumVisits').textContent = services ? services.length : 0;
 
     // Status Pill
@@ -1437,8 +1453,8 @@
 
   function renderHistory(services) {
     const histCard = document.getElementById('historyCard');
-    const tbody = document.getElementById('historyBody');
-    tbody.innerHTML = '';
+    const container = document.getElementById('historyListContainer');
+    container.innerHTML = '';
 
     if (!services || services.length === 0) {
       histCard.style.display = 'none';
@@ -1448,7 +1464,6 @@
     histCard.style.display = 'block';
     const t = translations[currentLang];
     const isAdmin = currentUser !== null;
-    document.getElementById('thActions').style.display = isAdmin ? 'table-cell' : 'none';
 
     services.forEach(s => {
       const parts = [];
@@ -1458,44 +1473,47 @@
       if (s.fuel_filter) parts.push(t.partFuelFilter);
       if (s.spark_plugs) parts.push(t.partSparkPlugs);
 
-      const nextInfo = [];
-      if (s.next_service_mileage) nextInfo.push(`${s.next_service_mileage} km`);
-      if (s.next_service_date) nextInfo.push(s.next_service_date);
+      const partsHtml = parts.length > 0 
+        ? parts.map(p => `<span class="badge-part">✔ ${p}</span>`).join('')
+        : `<span style="font-size: 11.5px; color: var(--text-muted);">${currentLang === 'ar' ? 'لم يتم استبدال فلاتر' : 'Inga filter bytta'}</span>`;
 
-      const tr = document.createElement('tr');
-      let actionHtml = '';
+      let adminBtns = '';
       if (isAdmin) {
-        actionHtml = `
-          <td>
-            <div class="btn-action-group">
-              <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️</button>
-              <button class="btn-tbl btn-tbl-del" onclick="deleteServiceRecord('${s.id}')">🗑️</button>
-            </div>
-          </td>
+        adminBtns = `
+          <div class="btn-action-group">
+            <button class="btn-tbl btn-tbl-edit" onclick="editServiceRecord('${s.id}')">✏️ Redigera</button>
+            <button class="btn-tbl btn-tbl-del" onclick="deleteServiceRecord('${s.id}')">🗑️ Ta bort</button>
+          </div>
         `;
       }
 
-      const partsHtml = parts.length > 0 
-        ? parts.map(p => `<span class="badge-part">${p}</span>`).join('')
-        : `<span style="font-size: 11px; color: var(--text-muted);">${currentLang === 'ar' ? 'بدون فلاتر' : 'Inga filter bytta'}</span>`;
+      const itemCard = document.createElement('div');
+      itemCard.className = 'history-card-item';
+      itemCard.innerHTML = `
+        <div class="h-card-top">
+          <span class="h-card-date">📅 ${s.service_date ? s.service_date.substring(0, 10) : ''}</span>
+          <span class="h-card-mileage">${s.mileage || ''} km</span>
+        </div>
+        
+        <div class="history-oil-box">
+          <span style="font-size: 16px;">🛢️</span>
+          <span>${s.oil_brand_type || '-'}</span>
+        </div>
+        
+        <div class="history-parts-box">
+          ${partsHtml}
+        </div>
 
-      tr.innerHTML = `
-        <td><strong>${s.service_date ? s.service_date.substring(0, 10) : ''}</strong></td>
-        <td>${s.mileage || ''} km</td>
-        <td>
-          <div class="history-oil-box">
-            <span>🛢️</span> <span>${s.oil_brand_type || '-'}</span>
-          </div>
-          <div class="history-parts-box">
-            ${partsHtml}
-          </div>
-          ${s.notes ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">${s.notes}</div>` : ''}
-        </td>
-        <td>${s.mechanic || '-'}</td>
-        <td>${nextInfo.join(' / ') || '-'}</td>
-        ${actionHtml}
+        ${s.notes ? `<div style="font-size: 12px; color: #cbd5e1; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; margin-top: 6px;">${s.notes}</div>` : ''}
+
+        <div class="h-card-next">
+          <span>${currentLang === 'ar' ? 'الصيانة القادمة:' : 'Nästa service:'} <strong>${s.next_service_mileage ? s.next_service_mileage + ' km' : '—'}</strong></span>
+          <span>${currentLang === 'ar' ? 'التاريخ:' : 'Datum:'} <strong>${s.next_service_date || '—'}</strong></span>
+        </div>
+
+        ${adminBtns}
       `;
-      tbody.appendChild(tr);
+      container.appendChild(itemCard);
     });
   }
 
@@ -1589,7 +1607,6 @@
 
     document.getElementById('pDate').textContent = latest?.service_date ? latest.service_date.substring(0, 10) : now.toISOString().substring(0, 10);
     
-    // توليد رقم بروتوكول تسلسلي رسمي بنمط ASR-08764
     let serialPart = '08764';
     if (latest && latest.id) {
       const numOnly = String(latest.id).replace(/\D/g, '');

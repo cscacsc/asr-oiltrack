@@ -372,6 +372,30 @@
     th { background: #080d1a; padding: 12px 10px; border-bottom: 2px solid var(--card-border); color: var(--accent-blue); font-size: 11px; text-transform: uppercase; }
     td { padding: 12px 10px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
 
+    /* Separated Oil & Parts in History */
+    .history-oil-box {
+      font-weight: 700;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .history-parts-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .badge-part {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-blue);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
     .btn-action-group {
       display: flex;
       gap: 6px;
@@ -656,8 +680,12 @@
           <input type="text" id="mechanic" placeholder="T.ex. Ahmed">
         </div>
         <div class="form-group">
-          <label data-i18n="lblOil">Motorolja</label>
-          <input type="text" id="oilDetails" placeholder="T.ex. Quartz Ineo 5W-30 (4.2L)">
+          <label data-i18n="lblOil">Motorolja (Märke & Viskositet)</label>
+          <input type="text" id="oilDetails" placeholder="T.ex. Mobil Super 3000 VC 0W-20">
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblOilQty">Oljemängd (Liter)</label>
+          <input type="text" id="oilQty" placeholder="T.ex. 5.2">
         </div>
 
         <div class="form-group full-width">
@@ -909,7 +937,8 @@
       lblCustPhone: "Telefonnummer",
       lblCurMileage: "Mätarställning (km) *",
       lblMechanic: "Mekaniker",
-      lblOil: "Motorolja (Märke, Viskositet, Mängd)",
+      lblOil: "Motorolja (Märke & Viskositet)",
+      lblOilQty: "Oljemängd (Liter)",
       lblChecklist: "Utbytta Delar & Filter",
       lblFiltersDesc: "Inspekterade och bytta enligt specifikation",
       lblOilUsed: "Motorolja som användes",
@@ -973,7 +1002,8 @@
       lblCustPhone: "Phone Number",
       lblCurMileage: "Mileage (km) *",
       lblMechanic: "Mechanic",
-      lblOil: "Engine Oil (Brand, Grade, Qty)",
+      lblOil: "Engine Oil (Brand & Grade)",
+      lblOilQty: "Oil Volume (Liters)",
       lblChecklist: "Replaced Parts & Filters",
       lblFiltersDesc: "Inspected and replaced according to specification",
       lblOilUsed: "Engine Oil Used",
@@ -1037,7 +1067,8 @@
       lblCustPhone: "رقم الهاتف",
       lblCurMileage: "عداد الكيلومترات (km) *",
       lblMechanic: "اسم الفني",
-      lblOil: "زيت المحرك (النوع، اللزوجة، الكمية)",
+      lblOil: "زيت المحرك (النوع واللزوجة)",
+      lblOilQty: "كمية الزيت (لتر)",
       lblChecklist: "الفلاتر والقطع المستبدلة",
       lblFiltersDesc: "تم الفحص والاستبدال حسب معايير الصانع",
       lblOilUsed: "زيت المحرك المستخدم",
@@ -1158,7 +1189,6 @@
       adminActionRow.style.display = 'grid';
       if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
       if (thActions) thActions.style.display = 'table-cell';
-      // ضبط تاريخ اليوم تلقائياً كقيمة افتراضية
       if (!document.getElementById('serviceDate').value) {
         document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
       }
@@ -1279,7 +1309,6 @@
   window.addEventListener('DOMContentLoaded', () => {
     initAuth();
     updateWorkshopButtons();
-    // ضبط تاريخ اليوم كافتراضي
     document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
     
     const params = new URLSearchParams(window.location.search);
@@ -1371,7 +1400,7 @@
       statusDiv.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
     }
 
-    // Modern Cards Population
+    // Modern Oil Card Display
     document.getElementById('cardOilVal').textContent = latest?.oil_brand_type || (currentLang === 'ar' ? 'زيت محرك معتمد' : 'Kvalitetsmotorolja');
 
     // Filters Grid with Individual Icons
@@ -1428,7 +1457,6 @@
 
     services.forEach(s => {
       const parts = [];
-      if (s.oil_brand_type) parts.push(`🛢 ${s.oil_brand_type}`);
       if (s.oil_filter) parts.push(t.partOilFilter);
       if (s.air_filter) parts.push(t.partAirFilter);
       if (s.cabin_filter) parts.push(t.partCabinFilter);
@@ -1452,12 +1480,21 @@
         `;
       }
 
+      const partsHtml = parts.length > 0 
+        ? parts.map(p => `<span class="badge-part">${p}</span>`).join('')
+        : `<span style="font-size: 11px; color: var(--text-muted);">${currentLang === 'ar' ? 'بدون فلاتر' : 'Inga filter bytta'}</span>`;
+
       tr.innerHTML = `
         <td><strong>${s.service_date ? s.service_date.substring(0, 10) : ''}</strong></td>
         <td>${s.mileage || ''} km</td>
         <td>
-          <div style="font-weight: 600;">${parts.join(', ')}</div>
-          ${s.notes ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${s.notes}</div>` : ''}
+          <div class="history-oil-box">
+            <span>🛢️</span> <span>${s.oil_brand_type || '-'}</span>
+          </div>
+          <div class="history-parts-box">
+            ${partsHtml}
+          </div>
+          ${s.notes ? `<div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">${s.notes}</div>` : ''}
         </td>
         <td>${s.mechanic || '-'}</td>
         <td>${nextInfo.join(' / ') || '-'}</td>
@@ -1476,7 +1513,18 @@
     document.getElementById('serviceDate').value = s.service_date ? s.service_date.substring(0, 10) : '';
     document.getElementById('mileage').value = s.mileage || '';
     document.getElementById('mechanic').value = s.mechanic || '';
-    document.getElementById('oilDetails').value = s.oil_brand_type || '';
+    
+    // استخراج الزيت والكمية إذا كانا مدموجين سابقاً
+    let oilStr = s.oil_brand_type || '';
+    let extractedQty = '';
+    const match = oilStr.match(/\(([\d\.]+)\s*L\)$/i);
+    if (match) {
+      extractedQty = match[1];
+      oilStr = oilStr.replace(/\s*\([\d\.]+\s*L\)$/i, '').trim();
+    }
+    document.getElementById('oilDetails').value = oilStr;
+    document.getElementById('oilQty').value = extractedQty;
+
     document.getElementById('chkOil').checked = !!s.oil_filter;
     document.getElementById('chkAir').checked = !!s.air_filter;
     document.getElementById('chkCabin').checked = !!s.cabin_filter;
@@ -1497,6 +1545,7 @@
   function cancelEdit() {
     document.getElementById('editRecordId').value = '';
     document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+    document.getElementById('oilQty').value = '';
     const t = translations[currentLang];
     document.getElementById('formTitleText').textContent = t.formTitle;
     document.getElementById('btnSubmitForm').textContent = t.btnSave;
@@ -1594,6 +1643,11 @@
     const reg = document.getElementById('regNr').value.trim().toUpperCase();
     const editId = document.getElementById('editRecordId').value;
     const inputDate = document.getElementById('serviceDate').value || new Date().toISOString().substring(0, 10);
+    
+    // دمج نوع الزيت مع الكمية إذا تم تحديدها
+    const oilName = document.getElementById('oilDetails').value.trim();
+    const oilQtyVal = document.getElementById('oilQty').value.trim();
+    const finalOilString = oilQtyVal ? `${oilName} (${oilQtyVal}L)`.trim() : oilName;
 
     const vehiclePayload = {
       reg_nr: reg,
@@ -1611,7 +1665,7 @@
       service_date: inputDate,
       mileage: parseInt(document.getElementById('mileage').value) || 0,
       mechanic: document.getElementById('mechanic').value.trim(),
-      oil_brand_type: document.getElementById('oilDetails').value.trim(),
+      oil_brand_type: finalOilString,
       oil_filter: document.getElementById('chkOil').checked,
       air_filter: document.getElementById('chkAir').checked,
       cabin_filter: document.getElementById('chkCabin').checked,

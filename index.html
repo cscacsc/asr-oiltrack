@@ -504,7 +504,7 @@
     #printProtocol { display: none; }
     @page {
       size: A4 portrait;
-      margin: 15mm 16mm;
+      margin: 14mm 16mm;
     }
     @media print {
       html, body {
@@ -543,6 +543,9 @@
         display: block;
         margin-bottom: 8px;
         object-fit: contain;
+        /* فلتر طباعة يجعل الشعار أسود داكن وحاد على الورقة البيضاء */
+        filter: brightness(0);
+        -webkit-filter: brightness(0);
       }
       .p-logo-title {
         font-size: 22px;
@@ -956,7 +959,7 @@
         <input type="email" id="loginEmail" required placeholder="">
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
-        <label>Lösenورد</label>
+        <label>Lösenord</label>
         <input type="password" id="loginPassword" required placeholder="••••••••">
       </div>
       <div style="display: flex; gap: 8px;">
@@ -971,8 +974,7 @@
 <div id="printProtocol">
   <div class="p-header">
     <div>
-      <!-- استخدام شعار الورشة الرسمي بالألوان الطبيعية -->
-      <img src="logo.png" alt="ASR Bilservice AB" class="p-logo-img" onerror="this.src='170865.png'">
+      <img src="170865.png" alt="ASR Bilservice AB" class="p-logo-img" onerror="this.src='logo.png'">
       <div class="p-logo-title">ASR BILSERVICE AB</div>
       <div class="p-logo-sub">AUKTORISERAT SERVICEPROTOKOLL & BILVERKSTAD</div>
       <div class="p-company-details">
@@ -1711,7 +1713,6 @@
     });
   }
 
-  // --- تعديل وحذف السجلات المباشر ---
   function editServiceRecord(recordId) {
     const s = cachedServices.find(item => item.id == recordId);
     if (!s) return;

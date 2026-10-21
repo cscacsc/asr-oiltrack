@@ -125,7 +125,7 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 14px;
     }
 
@@ -365,7 +365,7 @@
 
     .workshop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* Modern Responsive Timeline History (Mobile Cards / Desktop Table) */
+    /* Modern Responsive Timeline History */
     .history-card-item {
       background: #0f172a;
       border: 1px solid var(--card-border);
@@ -407,6 +407,17 @@
       border-radius: 6px;
       font-size: 11px;
       font-weight: 700;
+    }
+    .badge-source {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: var(--accent-gold);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-block;
+      margin-bottom: 6px;
     }
 
     .h-card-next {
@@ -489,33 +500,162 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    /* Print Protocol Styling */
+    /* STRICT ONE-PAGE A4 PROTOKOLL (PRINT ONLY) */
     #printProtocol { display: none; }
+    @page {
+      size: A4 portrait;
+      margin: 8mm 12mm;
+    }
     @media print {
-      body { background: #ffffff !important; color: #0f172a !important; padding: 0 !important; margin: 0 !important; font-size: 12px; direction: ltr !important; }
-      .container { display: none !important; }
-      .modal-backdrop { display: none !important; }
-      #printProtocol { display: block !important; width: 100%; max-width: 210mm; margin: 0 auto; padding: 12mm 18mm; background: #ffffff; }
-      .p-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #0f172a; padding-bottom: 14px; margin-bottom: 20px; }
-      .p-logo-img { max-height: 45px; width: auto; display: block; margin-bottom: 8px; object-fit: contain; }
-      .p-logo-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; color: #0f172a; }
-      .p-logo-sub { font-size: 11px; font-weight: 700; color: #475569; margin-top: 2px; }
-      .p-company-details { font-size: 10.5px; color: #334155; margin-top: 6px; line-height: 1.5; }
-      .p-meta { text-align: right; font-size: 11px; color: #334155; line-height: 1.5; }
-      .p-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 15px; margin-bottom: 18px; }
-      .p-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; background: #f8fafc; }
-      .p-box-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 8px; }
-      .p-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
+      html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 11px !important;
+        direction: ltr !important;
+        height: auto !important;
+      }
+      .container, .modal-backdrop { display: none !important; }
+      
+      #printProtocol {
+        display: block !important;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        background: #ffffff;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .p-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2.5px solid #0f172a;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      .p-logo-img {
+        max-height: 38px;
+        width: auto;
+        display: block;
+        margin-bottom: 4px;
+        object-fit: contain;
+      }
+      .p-logo-title {
+        font-size: 19px;
+        font-weight: 900;
+        letter-spacing: 0.5px;
+        color: #0f172a;
+        line-height: 1.1;
+      }
+      .p-logo-sub {
+        font-size: 9.5px;
+        font-weight: 700;
+        color: #475569;
+        margin-top: 1px;
+      }
+      .p-company-details {
+        font-size: 9.5px;
+        color: #334155;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .p-meta {
+        text-align: right;
+        font-size: 10px;
+        color: #334155;
+        line-height: 1.4;
+      }
+
+      .p-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .p-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px 10px;
+        background: #f8fafc;
+      }
+      .p-box-title {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #0f172a;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 3px;
+        margin-bottom: 6px;
+      }
+      .p-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+        font-size: 11px;
+      }
       .p-label { color: #64748b; font-weight: 600; }
       .p-val { font-weight: 700; color: #0f172a; }
-      .p-checklist-table { width: 100%; border-collapse: collapse; margin: 18px 0; }
-      .p-checklist-table th { background: #0f172a !important; color: #ffffff !important; font-size: 11px; padding: 8px 10px; text-align: left; border: 1px solid #0f172a; }
-      .p-checklist-table td { padding: 8px 10px; border: 1px solid #cbd5e1; font-size: 12px; color: #0f172a; }
+
+      .p-checklist-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+      }
+      .p-checklist-table th {
+        background: #0f172a !important;
+        color: #ffffff !important;
+        font-size: 10px;
+        padding: 5px 8px;
+        text-align: left;
+        border: 1px solid #0f172a;
+      }
+      .p-checklist-table td {
+        padding: 5px 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 11px;
+        color: #0f172a;
+      }
       .p-checklist-table tr:nth-child(even) { background: #f8fafc; }
       .check-yes { font-weight: 900; color: #16a34a; }
       .check-no { color: #94a3b8; }
-      .p-footer-grid { display: grid; grid-template-columns: 1fr 140px; gap: 20px; align-items: center; border-top: 2px solid #0f172a; padding-top: 15px; margin-top: 25px; }
-      #printQrContainer img { margin: 0 auto; display: block; }
+
+      .p-notes-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 8px 10px;
+        background: #f8fafc;
+        margin-bottom: 12px;
+      }
+      .p-notes-content {
+        font-size: 10.5px;
+        color: #334155;
+        min-height: 25px;
+      }
+
+      .p-footer-grid {
+        display: grid;
+        grid-template-columns: 1fr 110px;
+        gap: 15px;
+        align-items: center;
+        border-top: 1.5px solid #0f172a;
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+      .p-footer-text {
+        font-size: 9.5px;
+        color: #475569;
+        line-height: 1.5;
+      }
+      #printQrContainer img {
+        margin: 0 auto;
+        display: block;
+        max-width: 80px;
+        height: auto;
+      }
     }
   </style>
 </head>
@@ -627,6 +767,7 @@
       <div class="feature-details">
         <div class="feature-label" data-i18n="lblOilUsed">Motorolja som användes</div>
         <div class="feature-value" id="cardOilVal">---</div>
+        <div id="cardPartsSource" style="margin-top: 4px;"></div>
       </div>
     </div>
 
@@ -679,7 +820,7 @@
         </div>
         <div class="form-group">
           <label data-i18n="lblServiceDate">Servicedatum *</label>
-          <input type="date" id="serviceDate" required>
+          <input type="date" id="serviceDate" required onchange="handleServiceDateChange()">
         </div>
         <div class="form-group">
           <label data-i18n="lblModel">Bilmärke & Modell</label>
@@ -705,7 +846,7 @@
 
         <div class="form-group">
           <label data-i18n="lblCurMileage">Mätarställning (km) *</label>
-          <input type="number" id="mileage" required placeholder="T.ex. 220391">
+          <input type="number" id="mileage" required placeholder="T.ex. 220391" oninput="handleCurrentMileageInput()">
         </div>
         <div class="form-group">
           <label data-i18n="lblMechanic">Mekaniker</label>
@@ -718,6 +859,13 @@
         <div class="form-group">
           <label data-i18n="lblOilQty">Oljemängd (Liter)</label>
           <input type="text" id="oilQty" placeholder="T.ex. 5.2">
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblPartsSource">Materialkälla (Olja & Delar)</label>
+          <select id="partsSource">
+            <option value="workshop" selected data-i18n="optWorkshop">Från verkstaden (ASR Bilservice)</option>
+            <option value="customer" data-i18n="optCustomer">Från kunden (Medtagna delar)</option>
+          </select>
         </div>
 
         <div class="form-group full-width">
@@ -732,11 +880,11 @@
         </div>
 
         <div class="form-group">
-          <label data-i18n="lblNextMileage">Nästa service (km)</label>
+          <label data-i18n="lblNextMileage">Nästa service (km) [+15000 km]</label>
           <input type="number" id="nextMileage" placeholder="T.ex. 235391">
         </div>
         <div class="form-group">
-          <label data-i18n="lblNextDate">Nästa service datum</label>
+          <label data-i18n="lblNextDate">Nästa service datum [+1 år]</label>
           <input type="date" id="nextDate">
         </div>
 
@@ -818,7 +966,7 @@
   </div>
 </div>
 
-<!-- OFFICIAL A4 PROTOKOLL (PRINT ONLY) -->
+<!-- OFFICIAL A4 PROTOKOLL (COMPACT SINGLE PAGE) -->
 <div id="printProtocol">
   <div class="p-header">
     <div>
@@ -826,8 +974,8 @@
       <div class="p-logo-title">ASR BILSERVICE AB</div>
       <div class="p-logo-sub">AUKTORISERAT SERVICEPROTOKOLL & BILVERKSTAD</div>
       <div class="p-company-details">
-        <strong>Adress:</strong> Kummingatan 7I, 424 43 Angered<br>
-        <strong>Telefon:</strong> 073-725 55 57 &nbsp;|&nbsp; <strong>E-post:</strong> info@asrbilservice.se &nbsp;|&nbsp; <strong>Webb:</strong> asrbilservice.se
+        <strong>Adress:</strong> Kummingatan 7I, 424 43 Angered &nbsp;|&nbsp; <strong>Tel:</strong> 073-725 55 57<br>
+        <strong>E-post:</strong> info@asrbilservice.se &nbsp;|&nbsp; <strong>Webb:</strong> asrbilservice.se
       </div>
     </div>
     <div class="p-meta">
@@ -841,26 +989,26 @@
       <div class="p-box-title">FORDONS- & ÄGARUPPGIFTER</div>
       <div class="p-row"><span class="p-label">Registreringsnummer:</span> <span class="p-val" id="pReg">---</span></div>
       <div class="p-row"><span class="p-label">Bilmärke & Modell:</span> <span class="p-val" id="pModel">---</span></div>
-      <div class="p-row"><span class="p-label">Årsmodell / VIN:</span> <span class="p-val" id="pVin">---</span></div>
+      <div class="p-row"><span class="p-label">Chassinummer (VIN):</span> <span class="p-val" id="pVin">---</span></div>
       <div class="p-row"><span class="p-label">Kundens namn:</span> <span class="p-val" id="pOwner">---</span></div>
       <div class="p-row"><span class="p-label">Telefonnummer:</span> <span class="p-val" id="pPhone">---</span></div>
     </div>
     <div class="p-box">
       <div class="p-box-title">SERVICEÖVERSIKT</div>
-      <div class="p-row"><span class="p-label">Mätarställning vid service:</span> <span class="p-val" id="pMileage">--- km</span></div>
-      <div class="p-row"><span class="p-label">Ansvarig mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
+      <div class="p-row"><span class="p-label">Mätarställning:</span> <span class="p-val" id="pMileage">--- km</span></div>
+      <div class="p-row"><span class="p-label">Mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
+      <div class="p-row"><span class="p-label">Materialkälla:</span> <span class="p-val" id="pSource" style="color: #b45309;">---</span></div>
       <div class="p-row"><span class="p-label">Nästa service (km):</span> <span class="p-val" id="pNextKm">--- km</span></div>
-      <div class="p-row"><span class="p-label">Nästa service senast:</span> <span class="p-val" id="pNextDate">---</span></div>
-      <div class="p-row"><span class="p-label">Servicebedömning:</span> <span class="p-val" style="color: #16a34a;">GODKÄND (OK)</span></div>
+      <div class="p-row"><span class="p-label">Nästa service datum:</span> <span class="p-val" id="pNextDate">---</span></div>
     </div>
   </div>
 
   <table class="p-checklist-table">
     <thead>
       <tr>
-        <th>SERVICEPUNKT / KONTROLLMOMENT</th>
-        <th style="width: 150px;">STATUS</th>
-        <th>SPECIFIKATION / NOTERING</th>
+        <th style="width: 40%;">SERVICEPUNKT / KONTROLLMOMENT</th>
+        <th style="width: 25%;">STATUS</th>
+        <th style="width: 35%;">SPECIFIKATION</th>
       </tr>
     </thead>
     <tbody>
@@ -872,45 +1020,43 @@
       <tr>
         <td><strong>Oljefilter</strong> (Byte)</td>
         <td id="pChkOil">---</td>
-        <td>Nytt filter enligt tillverkarens specifikation</td>
+        <td>Nytt filter</td>
       </tr>
       <tr>
         <td><strong>Luftfilter</strong> (Byte)</td>
         <td id="pChkAir">---</td>
-        <td>Inspekterat / Nytt filter</td>
+        <td>Nytt filter</td>
       </tr>
       <tr>
         <td><strong>Kupéfilter</strong> (Byte)</td>
         <td id="pChkCabin">---</td>
-        <td>Inspekterat / Nytt filter</td>
+        <td>Nytt filter</td>
       </tr>
       <tr>
         <td><strong>Bränslefilter</strong> (Byte)</td>
         <td id="pChkFuel">---</td>
-        <td>Inspekterat / Nytt filter</td>
+        <td>Nytt filter</td>
       </tr>
       <tr>
         <td><strong>Tändstift</strong> (Byte)</td>
         <td id="pChkSpark">---</td>
-        <td>Kontrollerade / Nya tändstift</td>
+        <td>Nya stift</td>
       </tr>
     </tbody>
   </table>
 
-  <div class="p-box" style="margin-bottom: 20px;">
+  <div class="p-notes-box">
     <div class="p-box-title">MEKANIKERNOTERINGAR / ARBETSORDER</div>
-    <div id="pNotes" style="font-size: 12px; color: #334155; min-height: 35px;">Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.</div>
+    <div id="pNotes" class="p-notes-content">Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.</div>
   </div>
 
   <div class="p-footer-grid">
-    <div>
-      <div style="font-size: 11px; color: #475569; line-height: 1.6;">
-        Detta serviceprotokoll intygar att fordonet genomgått service och inspektion i enlighet med fordonstillverkarens föreskrifter av <strong>ASR Bilservice AB</strong> (Kummingatan 7I, Angered | Tel: 073-725 55 57). Skanna QR-koden till höger för att öppna och granska fordonets digitala servicebok online.
-      </div>
+    <div class="p-footer-text">
+      Detta digitala serviceprotokoll intygar att fordonet genomgått fackmannamässig service och inspektion av <strong>ASR Bilservice AB</strong> (Kummingatan 7I, Angered | Tel: 073-725 55 57). Skanna QR-koden till höger för att öppna fordonets fullständiga digitala servicebok online.
     </div>
     <div style="text-align: center;">
       <div id="printQrContainer"></div>
-      <div style="font-size: 9px; font-weight: 700; margin-top: 4px; text-transform: uppercase;">Digital Servicebok</div>
+      <div style="font-size: 8.5px; font-weight: 800; margin-top: 3px; text-transform: uppercase;">Digital Servicebok</div>
     </div>
   </div>
 </div>
@@ -955,6 +1101,9 @@
       lblMechanic: "Mekaniker",
       lblOil: "Motorolja (Märke & Viskositet)",
       lblOilQty: "Oljemängd (Liter)",
+      lblPartsSource: "Materialkälla (Olja & Delar)",
+      optWorkshop: "Från verkstaden (ASR Bilservice)",
+      optCustomer: "Från kunden (Medtagna delar)",
       lblChecklist: "Utbytta Delar & Filter",
       lblFiltersDesc: "Inspekterade och bytta enligt specifikation",
       lblOilUsed: "Motorolja som användes",
@@ -964,8 +1113,8 @@
       partCabinFilter: "Kupéfilter",
       partFuelFilter: "Bränslefilter",
       partSparkPlugs: "Tändstift",
-      lblNextMileage: "Nästa service (km)",
-      lblNextDate: "Nästa service datum",
+      lblNextMileage: "Nästa service (km) [+15000 km]",
+      lblNextDate: "Nästa service datum [+1 år]",
       lblNotes: "Noteringar / Anteckningar",
       btnSave: "💾 Spara & Skapa QR",
       btnUpdate: "💾 Uppdatera Service",
@@ -1020,6 +1169,9 @@
       lblMechanic: "Mechanic",
       lblOil: "Engine Oil (Brand & Grade)",
       lblOilQty: "Oil Volume (Liters)",
+      lblPartsSource: "Parts & Oil Source",
+      optWorkshop: "Supplied by workshop (ASR)",
+      optCustomer: "Supplied by customer",
       lblChecklist: "Replaced Parts & Filters",
       lblFiltersDesc: "Inspected and replaced according to specification",
       lblOilUsed: "Engine Oil Used",
@@ -1029,8 +1181,8 @@
       partCabinFilter: "Cabin Filter",
       partFuelFilter: "Fuel Filter",
       partSparkPlugs: "Spark Plugs",
-      lblNextMileage: "Next Service (km)",
-      lblNextDate: "Next Service Date",
+      lblNextMileage: "Next Service (km) [+15000 km]",
+      lblNextDate: "Next Service Date [+1 year]",
       lblNotes: "Notes / Work Order",
       btnSave: "💾 Save & Generate QR",
       btnUpdate: "💾 Update Service",
@@ -1085,6 +1237,9 @@
       lblMechanic: "اسم الفني",
       lblOil: "زيت المحرك (النوع واللزوجة)",
       lblOilQty: "كمية الزيت (لتر)",
+      lblPartsSource: "مصدر الزيت والقطع",
+      optWorkshop: "من الورشة (مع كفالة ASR)",
+      optCustomer: "من العميل (قطع جلبها العميل)",
       lblChecklist: "الفلاتر والقطع المستبدلة",
       lblFiltersDesc: "تم الفحص والاستبدال حسب معايير الصانع",
       lblOilUsed: "زيت المحرك المستخدم",
@@ -1094,8 +1249,8 @@
       partCabinFilter: "فلتر مكيف",
       partFuelFilter: "فلتر وقود",
       partSparkPlugs: "بواجي / شمعات احتراق",
-      lblNextMileage: "الصيانة القادمة عند عداد (km)",
-      lblNextDate: "تاريخ الصيانة القادمة",
+      lblNextMileage: "الصيانة القادمة (km) [+15000 km]",
+      lblNextDate: "تاريخ الصيانة القادمة [+سنة واحدة]",
       lblNotes: "ملاحظات إضافية / أمر الشغل",
       btnSave: "💾 حفظ وتوليد الكود",
       btnUpdate: "💾 تحديث بيانات الصيانة",
@@ -1181,6 +1336,22 @@
     document.getElementById('wsBokaBtn').href = `https://wa.me/${WORKSHOP_WHATSAPP}?text=${bookMsg}`;
   }
 
+  function handleCurrentMileageInput() {
+    const km = parseInt(document.getElementById('mileage').value);
+    if (!isNaN(km) && km > 0) {
+      document.getElementById('nextMileage').value = km + 15000;
+    }
+  }
+
+  function handleServiceDateChange() {
+    const dateVal = document.getElementById('serviceDate').value;
+    if (dateVal) {
+      const d = new Date(dateVal);
+      d.setFullYear(d.getFullYear() + 1);
+      document.getElementById('nextDate').value = d.toISOString().substring(0, 10);
+    }
+  }
+
   async function initAuth() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     handleAuthState(session ? session.user : null);
@@ -1203,7 +1374,9 @@
       adminActionRow.style.display = 'grid';
       if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
       if (!document.getElementById('serviceDate').value) {
-        document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+        const today = new Date().toISOString().substring(0, 10);
+        document.getElementById('serviceDate').value = today;
+        handleServiceDateChange();
       }
     } else {
       authBtnText.textContent = "Logga in (Mekaniker)";
@@ -1320,7 +1493,9 @@
   window.addEventListener('DOMContentLoaded', () => {
     initAuth();
     updateWorkshopButtons();
-    document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+    const today = new Date().toISOString().substring(0, 10);
+    document.getElementById('serviceDate').value = today;
+    handleServiceDateChange();
     
     const params = new URLSearchParams(window.location.search);
     const regParam = params.get('reg');
@@ -1414,6 +1589,14 @@
     // Modern Oil Card Display
     document.getElementById('cardOilVal').textContent = latest?.oil_brand_type || (currentLang === 'ar' ? 'زيت محرك معتمد' : 'Kvalitetsmotorolja');
 
+    // Parts Source Badge
+    const srcEl = document.getElementById('cardPartsSource');
+    if (latest?.notes && latest.notes.includes('[KÄLLA: KUND]')) {
+      srcEl.innerHTML = `<span class="badge-source" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #f87171;">📦 ${t.optCustomer}</span>`;
+    } else {
+      srcEl.innerHTML = `<span class="badge-source">🔧 ${t.optWorkshop}</span>`;
+    }
+
     // Filters Grid with Individual Icons
     const fGrid = document.getElementById('filtersGrid');
     fGrid.innerHTML = '';
@@ -1477,6 +1660,9 @@
         ? parts.map(p => `<span class="badge-part">✔ ${p}</span>`).join('')
         : `<span style="font-size: 11.5px; color: var(--text-muted);">${currentLang === 'ar' ? 'لم يتم استبدال فلاتر' : 'Inga filter bytta'}</span>`;
 
+      const isFromCust = s.notes && s.notes.includes('[KÄLLA: KUND]');
+      const cleanNotes = s.notes ? s.notes.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim() : '';
+
       let adminBtns = '';
       if (isAdmin) {
         adminBtns = `
@@ -1499,12 +1685,18 @@
           <span style="font-size: 16px;">🛢️</span>
           <span>${s.oil_brand_type || '-'}</span>
         </div>
+
+        <div style="margin-bottom: 6px;">
+          <span class="badge-source" style="${isFromCust ? 'background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #f87171;' : ''}">
+            ${isFromCust ? '📦 ' + t.optCustomer : '🔧 ' + t.optWorkshop}
+          </span>
+        </div>
         
         <div class="history-parts-box">
           ${partsHtml}
         </div>
 
-        ${s.notes ? `<div style="font-size: 12px; color: #cbd5e1; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; margin-top: 6px;">${s.notes}</div>` : ''}
+        ${cleanNotes ? `<div style="font-size: 12px; color: #cbd5e1; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; margin-top: 6px;">${cleanNotes}</div>` : ''}
 
         <div class="h-card-next">
           <span>${currentLang === 'ar' ? 'الصيانة القادمة:' : 'Nästa service:'} <strong>${s.next_service_mileage ? s.next_service_mileage + ' km' : '—'}</strong></span>
@@ -1537,6 +1729,12 @@
     document.getElementById('oilDetails').value = oilStr;
     document.getElementById('oilQty').value = extractedQty;
 
+    if (s.notes && s.notes.includes('[KÄLLA: KUND]')) {
+      document.getElementById('partsSource').value = 'customer';
+    } else {
+      document.getElementById('partsSource').value = 'workshop';
+    }
+
     document.getElementById('chkOil').checked = !!s.oil_filter;
     document.getElementById('chkAir').checked = !!s.air_filter;
     document.getElementById('chkCabin').checked = !!s.cabin_filter;
@@ -1544,7 +1742,9 @@
     document.getElementById('chkSpark').checked = !!s.spark_plugs;
     document.getElementById('nextMileage').value = s.next_service_mileage || '';
     document.getElementById('nextDate').value = s.next_service_date || '';
-    document.getElementById('notes').value = s.notes || '';
+    
+    const cleanNotes = s.notes ? s.notes.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim() : '';
+    document.getElementById('notes').value = cleanNotes;
 
     const t = translations[currentLang];
     document.getElementById('formTitleText').textContent = t.formTitleEdit;
@@ -1556,8 +1756,12 @@
 
   function cancelEdit() {
     document.getElementById('editRecordId').value = '';
-    document.getElementById('serviceDate').value = new Date().toISOString().substring(0, 10);
+    const today = new Date().toISOString().substring(0, 10);
+    document.getElementById('serviceDate').value = today;
     document.getElementById('oilQty').value = '';
+    document.getElementById('partsSource').value = 'workshop';
+    handleServiceDateChange();
+    
     const t = translations[currentLang];
     document.getElementById('formTitleText').textContent = t.formTitle;
     document.getElementById('btnSubmitForm').textContent = t.btnSave;
@@ -1628,27 +1832,32 @@
 
     document.getElementById('pMileage').textContent = (latest?.mileage || '---') + ' km';
     document.getElementById('pMechanic').textContent = latest?.mechanic || 'ASR Bilservice AB';
+    
+    const isCust = latest?.notes && latest.notes.includes('[KÄLLA: KUND]');
+    document.getElementById('pSource').textContent = isCust ? 'Kunden (Medtagna delar)' : 'Verkstaden (ASR Bilservice)';
+
     document.getElementById('pNextKm').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
     document.getElementById('pNextDate').textContent = latest?.next_service_date || '---';
 
-    document.getElementById('pOilSpec').textContent = latest?.oil_brand_type || 'Kvalitetsolja enligt tillverkarens norm';
+    document.getElementById('pOilSpec').textContent = latest?.oil_brand_type || 'Kvalitetsolja';
 
-    const fmtCheck = (val) => val ? '<span class="check-yes">✔ UTFÖRD (Bytt)</span>' : '<span class="check-no">✖ EJ BYTT / KONTROLLERAD</span>';
+    const fmtCheck = (val) => val ? '<span class="check-yes">✔ Bytt</span>' : '<span class="check-no">✖ Ej bytt</span>';
     document.getElementById('pChkOil').innerHTML = fmtCheck(latest?.oil_filter);
     document.getElementById('pChkAir').innerHTML = fmtCheck(latest?.air_filter);
     document.getElementById('pChkCabin').innerHTML = fmtCheck(latest?.cabin_filter);
     document.getElementById('pChkFuel').innerHTML = fmtCheck(latest?.fuel_filter);
     document.getElementById('pChkSpark').innerHTML = fmtCheck(latest?.spark_plugs);
 
-    document.getElementById('pNotes').textContent = latest?.notes && latest.notes.trim() !== '' ? latest.notes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.';
+    const cleanNotes = latest?.notes ? latest.notes.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim() : '';
+    document.getElementById('pNotes').textContent = cleanNotes !== '' ? cleanNotes : 'Inga övriga anmärkningar. Bilen har genomgått fullständig fackmannamässig service.';
 
     const serviceUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
     const pQr = document.getElementById('printQrContainer');
     pQr.innerHTML = '';
     new QRCode(pQr, {
       text: serviceUrl,
-      width: 100,
-      height: 100,
+      width: 80,
+      height: 80,
       colorDark: "#000000",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M
@@ -1671,6 +1880,11 @@
     const oilName = document.getElementById('oilDetails').value.trim();
     const oilQtyVal = document.getElementById('oilQty').value.trim();
     const finalOilString = oilQtyVal ? `${oilName} (${oilQtyVal}L)`.trim() : oilName;
+
+    const sourceVal = document.getElementById('partsSource').value;
+    const sourceTag = sourceVal === 'customer' ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
+    const userNotes = document.getElementById('notes').value.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim();
+    const finalNotes = `${sourceTag} ${userNotes}`.trim();
 
     const vehiclePayload = {
       reg_nr: reg,
@@ -1696,7 +1910,7 @@
       spark_plugs: document.getElementById('chkSpark').checked,
       next_service_mileage: parseInt(document.getElementById('nextMileage').value) || null,
       next_service_date: document.getElementById('nextDate').value || null,
-      notes: document.getElementById('notes').value.trim()
+      notes: finalNotes
     };
 
     let resultError = null;

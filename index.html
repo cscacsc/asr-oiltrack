@@ -365,7 +365,7 @@
 
     .workshop-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-    /* History & All Vehicles Table */
+    /* History Table */
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
     [dir="rtl"] table { text-align: right; }
@@ -480,9 +480,7 @@
       .p-checklist-table tr:nth-child(even) { background: #f8fafc; }
       .check-yes { font-weight: 900; color: #16a34a; }
       .check-no { color: #94a3b8; }
-      .p-footer-grid { display: grid; grid-template-columns: 1fr 140px; gap: 20px; align-items: center; border-top: 2px solid #0f172a; padding-top: 15px; margin-top: 20px; }
-      .p-signatures { margin-top: 25px; max-width: 300px; }
-      .p-sign-line { border-top: 1px dashed #64748b; padding-top: 6px; font-size: 11px; color: #475569; text-align: center; }
+      .p-footer-grid { display: grid; grid-template-columns: 1fr 140px; gap: 20px; align-items: center; border-top: 2px solid #0f172a; padding-top: 15px; margin-top: 25px; }
       #printQrContainer img { margin: 0 auto; display: block; }
     }
   </style>
@@ -887,9 +885,6 @@
     <div>
       <div style="font-size: 11px; color: #475569; line-height: 1.6;">
         Detta serviceprotokoll intygar att fordonet genomgått service och inspektion i enlighet med fordonstillverkarens föreskrifter av <strong>ASR Bilservice AB</strong> (Kummingatan 7I, Angered | Tel: 073-725 55 57). Skanna QR-koden till höger för att öppna och granska fordonets digitala servicebok online.
-      </div>
-      <div class="p-signatures">
-        <div class="p-sign-line">Stämpel & Underskrift Verkstad / Mekaniker</div>
       </div>
     </div>
     <div style="text-align: center;">
@@ -1514,7 +1509,6 @@
     document.getElementById('mileage').value = s.mileage || '';
     document.getElementById('mechanic').value = s.mechanic || '';
     
-    // استخراج الزيت والكمية إذا كانا مدموجين سابقاً
     let oilStr = s.oil_brand_type || '';
     let extractedQty = '';
     const match = oilStr.match(/\(([\d\.]+)\s*L\)$/i);
@@ -1594,7 +1588,20 @@
     const now = new Date();
 
     document.getElementById('pDate').textContent = latest?.service_date ? latest.service_date.substring(0, 10) : now.toISOString().substring(0, 10);
-    document.getElementById('pDocNr').textContent = 'ASR-' + currentReg + '-' + (latest?.id || Math.floor(1000 + Math.random() * 9000));
+    
+    // توليد رقم بروتوكول تسلسلي رسمي بنمط ASR-08764
+    let serialPart = '08764';
+    if (latest && latest.id) {
+      const numOnly = String(latest.id).replace(/\D/g, '');
+      if (numOnly.length >= 4) {
+        serialPart = '0' + numOnly.substring(numOnly.length - 4);
+      } else {
+        serialPart = '0' + String(latest.id).padStart(4, '0');
+      }
+    } else {
+      serialPart = '0' + String(Math.floor(1000 + Math.random() * 9000));
+    }
+    document.getElementById('pDocNr').textContent = 'ASR-' + serialPart;
 
     document.getElementById('pReg').textContent = currentReg;
     document.getElementById('pModel').textContent = (vehicle?.model || '---') + (vehicle?.year_model ? ` (${vehicle.year_model})` : '');
@@ -1644,7 +1651,6 @@
     const editId = document.getElementById('editRecordId').value;
     const inputDate = document.getElementById('serviceDate').value || new Date().toISOString().substring(0, 10);
     
-    // دمج نوع الزيت مع الكمية إذا تم تحديدها
     const oilName = document.getElementById('oilDetails').value.trim();
     const oilQtyVal = document.getElementById('oilQty').value.trim();
     const finalOilString = oilQtyVal ? `${oilName} (${oilQtyVal}L)`.trim() : oilName;

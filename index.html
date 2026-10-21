@@ -500,11 +500,11 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    /* STRICT ONE-PAGE A4 PROTOKOLL (PRINT ONLY) */
+    /* PERFECT BALANCED ONE-PAGE A4 PROTOKOLL */
     #printProtocol { display: none; }
     @page {
       size: A4 portrait;
-      margin: 8mm 12mm;
+      margin: 15mm 16mm;
     }
     @media print {
       html, body {
@@ -512,7 +512,7 @@
         color: #0f172a !important;
         padding: 0 !important;
         margin: 0 !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
         direction: ltr !important;
         height: auto !important;
       }
@@ -534,68 +534,68 @@
         justify-content: space-between;
         align-items: flex-start;
         border-bottom: 2.5px solid #0f172a;
-        padding-bottom: 8px;
-        margin-bottom: 12px;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
       }
       .p-logo-img {
-        max-height: 38px;
+        max-height: 52px;
         width: auto;
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
         object-fit: contain;
       }
       .p-logo-title {
-        font-size: 19px;
+        font-size: 22px;
         font-weight: 900;
         letter-spacing: 0.5px;
         color: #0f172a;
         line-height: 1.1;
       }
       .p-logo-sub {
-        font-size: 9.5px;
+        font-size: 10.5px;
         font-weight: 700;
         color: #475569;
-        margin-top: 1px;
+        margin-top: 3px;
       }
       .p-company-details {
-        font-size: 9.5px;
+        font-size: 10.5px;
         color: #334155;
-        margin-top: 4px;
-        line-height: 1.4;
+        margin-top: 6px;
+        line-height: 1.5;
       }
       .p-meta {
         text-align: right;
-        font-size: 10px;
+        font-size: 11.5px;
         color: #334155;
-        line-height: 1.4;
+        line-height: 1.6;
       }
 
       .p-grid {
         display: grid;
-        grid-template-columns: 1.3fr 1fr;
-        gap: 12px;
-        margin-bottom: 12px;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 16px;
+        margin-bottom: 18px;
       }
       .p-box {
         border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 8px 10px;
+        border-radius: 8px;
+        padding: 12px 14px;
         background: #f8fafc;
       }
       .p-box-title {
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
         color: #0f172a;
         border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 3px;
-        margin-bottom: 6px;
+        padding-bottom: 5px;
+        margin-bottom: 8px;
       }
       .p-row {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 3px;
-        font-size: 11px;
+        margin-bottom: 5px;
+        font-size: 12px;
       }
       .p-label { color: #64748b; font-weight: 600; }
       .p-val { font-weight: 700; color: #0f172a; }
@@ -603,20 +603,20 @@
       .p-checklist-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 10px 0;
+        margin: 18px 0;
       }
       .p-checklist-table th {
         background: #0f172a !important;
         color: #ffffff !important;
-        font-size: 10px;
-        padding: 5px 8px;
+        font-size: 11px;
+        padding: 8px 12px;
         text-align: left;
         border: 1px solid #0f172a;
       }
       .p-checklist-table td {
-        padding: 5px 8px;
+        padding: 8px 12px;
         border: 1px solid #cbd5e1;
-        font-size: 11px;
+        font-size: 12px;
         color: #0f172a;
       }
       .p-checklist-table tr:nth-child(even) { background: #f8fafc; }
@@ -625,35 +625,36 @@
 
       .p-notes-box {
         border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        padding: 8px 10px;
+        border-radius: 8px;
+        padding: 12px 14px;
         background: #f8fafc;
-        margin-bottom: 12px;
+        margin-bottom: 20px;
       }
       .p-notes-content {
-        font-size: 10.5px;
+        font-size: 11.5px;
         color: #334155;
-        min-height: 25px;
+        min-height: 40px;
+        line-height: 1.5;
       }
 
       .p-footer-grid {
         display: grid;
         grid-template-columns: 1fr 110px;
-        gap: 15px;
+        gap: 20px;
         align-items: center;
         border-top: 1.5px solid #0f172a;
-        padding-top: 10px;
-        margin-top: 10px;
+        padding-top: 14px;
+        margin-top: 16px;
       }
       .p-footer-text {
-        font-size: 9.5px;
+        font-size: 10.5px;
         color: #475569;
-        line-height: 1.5;
+        line-height: 1.6;
       }
       #printQrContainer img {
         margin: 0 auto;
         display: block;
-        max-width: 80px;
+        max-width: 95px;
         height: auto;
       }
     }
@@ -955,7 +956,7 @@
         <input type="email" id="loginEmail" required placeholder="">
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
-        <label>Lösenord</label>
+        <label>Lösenورد</label>
         <input type="password" id="loginPassword" required placeholder="••••••••">
       </div>
       <div style="display: flex; gap: 8px;">
@@ -966,11 +967,12 @@
   </div>
 </div>
 
-<!-- OFFICIAL A4 PROTOKOLL (COMPACT SINGLE PAGE) -->
+<!-- OFFICIAL A4 PROTOKOLL (BALANCED FULL SINGLE PAGE) -->
 <div id="printProtocol">
   <div class="p-header">
     <div>
-      <img src="logo.png" alt="ASR Bilservice AB" class="p-logo-img" onerror="this.style.display='none'">
+      <!-- استخدام شعار الورشة الرسمي بالألوان الطبيعية -->
+      <img src="logo.png" alt="ASR Bilservice AB" class="p-logo-img" onerror="this.src='170865.png'">
       <div class="p-logo-title">ASR BILSERVICE AB</div>
       <div class="p-logo-sub">AUKTORISERAT SERVICEPROTOKOLL & BILVERKSTAD</div>
       <div class="p-company-details">
@@ -996,7 +998,7 @@
     <div class="p-box">
       <div class="p-box-title">SERVICEÖVERSIKT</div>
       <div class="p-row"><span class="p-label">Mätarställning:</span> <span class="p-val" id="pMileage">--- km</span></div>
-      <div class="p-row"><span class="p-label">Mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
+      <div class="p-row"><span class="p-label">Ansvarig mekaniker:</span> <span class="p-val" id="pMechanic">---</span></div>
       <div class="p-row"><span class="p-label">Materialkälla:</span> <span class="p-val" id="pSource" style="color: #b45309;">---</span></div>
       <div class="p-row"><span class="p-label">Nästa service (km):</span> <span class="p-val" id="pNextKm">--- km</span></div>
       <div class="p-row"><span class="p-label">Nästa service datum:</span> <span class="p-val" id="pNextDate">---</span></div>
@@ -1052,11 +1054,11 @@
 
   <div class="p-footer-grid">
     <div class="p-footer-text">
-      Detta digitala serviceprotokoll intygar att fordonet genomgått fackmannamässig service och inspektion av <strong>ASR Bilservice AB</strong> (Kummingatan 7I, Angered | Tel: 073-725 55 57). Skanna QR-koden till höger för att öppna fordonets fullständiga digitala servicebok online.
+      Detta digitala serviceprotokoll intygar att fordonet genomgått fackmannamässig service och inspektion i enlighet med fordonstillverkarens föreskrifter av <strong>ASR Bilservice AB</strong> (Kummingatan 7I, Angered | Tel: 073-725 55 57). Skanna QR-koden till höger för att öppna fordonets fullständiga digitala servicebok online.
     </div>
     <div style="text-align: center;">
       <div id="printQrContainer"></div>
-      <div style="font-size: 8.5px; font-weight: 800; margin-top: 3px; text-transform: uppercase;">Digital Servicebok</div>
+      <div style="font-size: 9px; font-weight: 800; margin-top: 4px; text-transform: uppercase;">Digital Servicebok</div>
     </div>
   </div>
 </div>
@@ -1856,8 +1858,8 @@
     pQr.innerHTML = '';
     new QRCode(pQr, {
       text: serviceUrl,
-      width: 80,
-      height: 80,
+      width: 95,
+      height: 95,
       colorDark: "#000000",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M

@@ -1444,7 +1444,6 @@
     }
   }
 
-  // --- تصدير إكسيل حقيقي متناسق ---
   async function exportAllDataToExcel() {
     if (!currentUser) return;
     
@@ -1532,12 +1531,10 @@
     document.getElementById('csvFileInput').click();
   }
 
-  // دالة تحويل وضبط صيغة التواريخ من أي شكل إلى YYYY-MM-DD
   function parseStandardDate(str) {
     if (!str) return null;
     str = str.trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
-    // إذا كان التاريخ DD/MM/YYYY أو DD-MM-YYYY
     const parts = str.split(/[\/\-\.]/);
     if (parts.length === 3) {
       if (parts[0].length === 4) {
@@ -1549,7 +1546,6 @@
     return null;
   }
 
-  // --- محرك الاستيراد الذكي (يدعم ملفات HTML/XLS وملفات CSV) ---
   async function handleCSVImport(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1559,14 +1555,13 @@
       const content = e.target.result;
       let rowsData = [];
 
-      // إذا كان الملف بتنسيق HTML/XLS (المصدّر من الموقع)
       if (content.includes('<table') || content.includes('<tr')) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, 'text/html');
         const rows = doc.querySelectorAll('tr');
 
         rows.forEach((tr, rIdx) => {
-          if (rIdx === 0) return; // تخطي رأس الجدول
+          if (rIdx === 0) return;
           const tds = tr.querySelectorAll('td');
           if (tds.length >= 8) {
             rowsData.push({
@@ -1593,7 +1588,6 @@
           }
         });
       } else {
-        // إذا كان الملف بصيغة نصية CSV
         const lines = content.split(/\r\n|\n/).filter(line => line.trim() !== '');
         if (lines.length >= 2) {
           const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
@@ -1641,7 +1635,6 @@
       for (const item of rowsData) {
         if (!item.reg_nr) continue;
 
-        // 1. تحديث أو إدخال ملف السيارة
         const vPayload = {
           reg_nr: item.reg_nr,
           model: item.model,
@@ -1652,14 +1645,29 @@
         };
         await supabaseClient.from('vehicles').upsert(vPayload, { onConflict: 'reg_nr' });
 
-        // 2. إدخال سجل الصيانة
         const isCust = (item.materialkalla || '').toLowerCase().includes('kund');
         const sourceTag = isCust ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
         const finalNotes = `${sourceTag} ${item.notes}`.trim();
 
+        const sDate = item.service_date || new Date().toISOString().substring(0, 10);
+        
+        // حساب تلقائي للكم التالي إن كان فارغاً
+        let finalNextMileage = item.next_service_mileage;
+        if (!finalNextMileage && item.mileage > 0) {
+          finalNextMileage = item.mileage + 15000;
+        }
+
+        // حساب تلقائي للتاريخ التالي (+1 سنة) إن كان فارغاً
+        let finalNextDate = item.next_service_date;
+        if (!finalNextDate && sDate) {
+          const d = new Date(sDate);
+          d.setFullYear(d.getFullYear() + 1);
+          finalNextDate = d.toISOString().substring(0, 10);
+        }
+
         const sPayload = {
           reg_nr: item.reg_nr,
-          service_date: item.service_date || new Date().toISOString().substring(0, 10),
+          service_date: sDate,
           mileage: item.mileage,
           oil_brand_type: item.oil_brand_type,
           oil_filter: item.oil_filter,
@@ -1667,8 +1675,8 @@
           cabin_filter: item.cabin_filter,
           fuel_filter: item.fuel_filter,
           spark_plugs: item.spark_plugs,
-          next_service_mileage: item.next_service_mileage,
-          next_service_date: item.next_service_date,
+          next_service_mileage: finalNextMileage,
+          next_service_date: finalNextDate,
           mechanic: item.mechanic,
           notes: finalNotes
         };
@@ -1833,7 +1841,6 @@
     document.getElementById('sumVin').textContent = vehicle?.vin || '---';
     document.getElementById('sumVisits').textContent = services ? services.length : 0;
 
-    // Status Pill
     const statusDiv = document.getElementById('sumStatus');
     if (latest && latest.next_service_date) {
       const today = new Date();
@@ -1851,10 +1858,8 @@
       statusDiv.innerHTML = `<span class="status-pill status-up-to-date">${t.stOk}</span>`;
     }
 
-    // Modern Oil Card Display
     document.getElementById('cardOilVal').textContent = latest?.oil_brand_type || (currentLang === 'ar' ? 'زيت محرك معتمد' : 'Kvalitetsmotorolja');
 
-    // Parts Source Badge
     const srcEl = document.getElementById('cardPartsSource');
     if (latest?.notes && latest.notes.includes('[KÄLLA: KUND]')) {
       srcEl.innerHTML = `<span class="badge-source" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #f87171;">📦 ${t.optCustomer}</span>`;
@@ -1862,7 +1867,6 @@
       srcEl.innerHTML = `<span class="badge-source">🔧 ${t.optWorkshop}</span>`;
     }
 
-    // Filters Grid with Individual Icons
     const fGrid = document.getElementById('filtersGrid');
     fGrid.innerHTML = '';
     const filterItems = [
@@ -1887,7 +1891,6 @@
     document.getElementById('cardNextMileageVal').textContent = latest?.next_service_mileage ? `${latest.next_service_mileage} km` : '---';
     document.getElementById('cardNextDateVal').textContent = latest?.next_service_date ? `${latest.next_service_date}` : '---';
 
-    // WhatsApp / SMS Communication
     const targetUrl = `${BASE_SERVICE_URL}/?reg=${encodeURIComponent(currentReg)}`;
     const msg = encodeURIComponent(`${t.smsMsg} (${currentReg}): ${targetUrl}`);
     
@@ -2161,10 +2164,26 @@
 
     await supabaseClient.from('vehicles').upsert(vehiclePayload, { onConflict: 'reg_nr' });
 
+    const currentMileage = parseInt(document.getElementById('mileage').value) || 0;
+    
+    // حساب تلقائي للكم التالي إن ترك فارغاً
+    let nextMileageVal = parseInt(document.getElementById('nextMileage').value);
+    if (isNaN(nextMileageVal) || !nextMileageVal) {
+      nextMileageVal = currentMileage > 0 ? currentMileage + 15000 : null;
+    }
+
+    // حساب تلقائي للتاريخ التالي إن ترك فارغاً (+1 سنة)
+    let nextDateVal = document.getElementById('nextDate').value;
+    if (!nextDateVal && inputDate) {
+      const d = new Date(inputDate);
+      d.setFullYear(d.getFullYear() + 1);
+      nextDateVal = d.toISOString().substring(0, 10);
+    }
+
     const servicePayload = {
       reg_nr: reg,
       service_date: inputDate,
-      mileage: parseInt(document.getElementById('mileage').value) || 0,
+      mileage: currentMileage,
       mechanic: document.getElementById('mechanic').value.trim(),
       oil_brand_type: finalOilString,
       oil_filter: document.getElementById('chkOil').checked,
@@ -2172,8 +2191,8 @@
       cabin_filter: document.getElementById('chkCabin').checked,
       fuel_filter: document.getElementById('chkFuel').checked,
       spark_plugs: document.getElementById('chkSpark').checked,
-      next_service_mileage: parseInt(document.getElementById('nextMileage').value) || null,
-      next_service_date: document.getElementById('nextDate').value || null,
+      next_service_mileage: nextMileageVal,
+      next_service_date: nextDateVal || null,
       notes: finalNotes
     };
 

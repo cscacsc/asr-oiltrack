@@ -681,9 +681,9 @@
       <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')" title="العربية">🇸🇦</button>
     </div>
     <div class="auth-btn-group">
-      <button id="btnExportData" class="auth-btn btn-excel" style="display: none;" onclick="exportAllDataToCSV()">📥 <span data-i18n="btnExport">Exportera Excel</span></button>
+      <button id="btnExportData" class="auth-btn btn-excel" style="display: none;" onclick="exportAllDataToExcel()">📥 <span data-i18n="btnExport">Exportera Excel</span></button>
       <button id="btnImportData" class="auth-btn btn-excel" style="display: none;" onclick="triggerImportCSV()">📤 <span data-i18n="btnImport">Importera Excel</span></button>
-      <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
+      <input type="file" id="csvFileInput" accept=".csv, .xls, .xlsx" style="display: none;" onchange="handleCSVImport(event)">
 
       <button id="btnAllRecords" class="auth-btn btn-archive" style="display: none;" onclick="toggleAllVehiclesView()">📋 <span data-i18n="btnAllRecords">Alla bilar & poster</span></button>
       <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
@@ -1224,8 +1224,6 @@
       btnAllRecords: "All Vehicles & Records",
       allVehiclesTitle: "📋 All Registered Vehicles & Records",
       btnCloseArchive: "Close Archive",
-      btnExport: "Export Excel",
-      btnImport: "Import Excel",
       thAllReg: "Reg.nr",
       thAllCar: "Make / Model",
       thAllOwner: "Customer / Owner",
@@ -1446,8 +1444,8 @@
     }
   }
 
-  // --- ميزة استيراد وتصدير إكسيل (Excel / CSV Backup) ---
-  async function exportAllDataToCSV() {
+  // --- تصدير جدول إكسيل حقيقي متناسق بأعمدة مستقلة ---
+  async function exportAllDataToExcel() {
     if (!currentUser) return;
     
     const { data: vehicles } = await supabaseClient.from('vehicles').select('*');
@@ -1464,46 +1462,67 @@
     }
 
     const headers = [
-      "RegNr", "Modell", "Arsmodell", "VIN", "Kundnamn", "Telefon",
-      "Servicedatum", "Matarstallning_km", "Motorolja", "Materialkalla",
-      "Oljefilter", "Luftfilter", "Kupefilter", "Branslefilter", "Tandstift",
-      "Nasta_Service_km", "Nasta_Service_datum", "Mekaniker", "Noteringar"
+      "Reg.nr", "Märke & Modell", "Årsmodell", "Chassinummer (VIN)", "Kundens Namn", "Telefonnummer",
+      "Servicedatum", "Mätarställning (km)", "Motorolja", "Materialkälla",
+      "Oljefilter", "Luftfilter", "Kupéfilter", "Bränslefilter", "Tändstift",
+      "Nästa Service (km)", "Nästa Service Datum", "Ansvarig Mekaniker", "Mekanikernoteringar"
     ];
 
-    const rows = services.map(s => {
+    let tableHtml = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+        <style>
+          th { background-color: #0b1120; color: #f59e0b; font-weight: bold; padding: 10px; border: 1px solid #cbd5e1; }
+          td { padding: 8px; border: 1px solid #e2e8f0; font-family: Arial, sans-serif; }
+          .reg { font-weight: bold; color: #b45309; }
+        </style>
+      </head>
+      <body>
+        <table border="1">
+          <thead>
+            <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+    `;
+
+    services.forEach(s => {
       const v = vMap[s.reg_nr] || {};
       const isCust = s.notes && s.notes.includes('[KÄLLA: KUND]');
       const cleanNotes = s.notes ? s.notes.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim() : '';
 
-      return [
-        `"${s.reg_nr || ''}"`,
-        `"${(v.model || '').replace(/"/g, '""')}"`,
-        `"${v.year_model || ''}"`,
-        `"${v.vin || ''}"`,
-        `"${(v.customer_name || '').replace(/"/g, '""')}"`,
-        `"${v.customer_phone || ''}"`,
-        `"${s.service_date ? s.service_date.substring(0, 10) : ''}"`,
-        `"${s.mileage || ''}"`,
-        `"${(s.oil_brand_type || '').replace(/"/g, '""')}"`,
-        `"${isCust ? 'Kunden' : 'Verkstaden'}"`,
-        `"${s.oil_filter ? 'JA' : 'NEJ'}"`,
-        `"${s.air_filter ? 'JA' : 'NEJ'}"`,
-        `"${s.cabin_filter ? 'JA' : 'NEJ'}"`,
-        `"${s.fuel_filter ? 'JA' : 'NEJ'}"`,
-        `"${s.spark_plugs ? 'JA' : 'NEJ'}"`,
-        `"${s.next_service_mileage || ''}"`,
-        `"${s.next_service_date || ''}"`,
-        `"${(s.mechanic || '').replace(/"/g, '""')}"`,
-        `"${cleanNotes.replace(/"/g, '""')}"`
-      ].join(';');
+      tableHtml += `
+        <tr>
+          <td class="reg">${s.reg_nr || ''}</td>
+          <td>${v.model || ''}</td>
+          <td>${v.year_model || ''}</td>
+          <td>${v.vin || ''}</td>
+          <td>${v.customer_name || ''}</td>
+          <td>${v.customer_phone || ''}</td>
+          <td>${s.service_date ? s.service_date.substring(0, 10) : ''}</td>
+          <td>${s.mileage || ''}</td>
+          <td>${s.oil_brand_type || ''}</td>
+          <td>${isCust ? 'Kunden' : 'Verkstaden'}</td>
+          <td>${s.oil_filter ? 'JA' : 'NEJ'}</td>
+          <td>${s.air_filter ? 'JA' : 'NEJ'}</td>
+          <td>${s.cabin_filter ? 'JA' : 'NEJ'}</td>
+          <td>${s.fuel_filter ? 'JA' : 'NEJ'}</td>
+          <td>${s.spark_plugs ? 'JA' : 'NEJ'}</td>
+          <td>${s.next_service_mileage || ''}</td>
+          <td>${s.next_service_date || ''}</td>
+          <td>${s.mechanic || ''}</td>
+          <td>${cleanNotes}</td>
+        </tr>
+      `;
     });
 
-    const csvContent = '\uFEFF' + headers.join(';') + '\r\n' + rows.join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    tableHtml += `</tbody></table></body></html>`;
+
+    const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `ASR_Servicebok_Backup_${new Date().toISOString().substring(0,10)}.csv`);
+    link.href = url;
+    link.download = `ASR_Bilservice_Data_${new Date().toISOString().substring(0,10)}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1526,49 +1545,47 @@
         return;
       }
 
-      const delimiter = lines[0].includes(';') ? ';' : ',';
-      const headers = lines[0].split(delimiter).map(h => h.replace(/"/g, '').trim().toLowerCase());
+      const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+      const headers = lines[0].split(delimiter).map(h => h.replace(/["\r]/g, '').trim().toLowerCase());
 
       let importedCount = 0;
 
       for (let i = 1; i < lines.length; i++) {
-        const rawCols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
+        const rawCols = lines[i].split(delimiter).map(c => c.replace(/^["\s]+|["\s]+$/g, '').trim());
         const row = {};
         headers.forEach((h, idx) => { row[h] = rawCols[idx] || ''; });
 
-        const regNr = (row.regnr || row.reg_nr || row['registreringsnummer'] || '').toUpperCase();
+        const regNr = (row['reg.nr'] || row.regnr || row.reg_nr || row['registreringsnummer'] || '').toUpperCase();
         if (!regNr) continue;
 
-        // تحديث أو إدخال ملف السيارة
         const vPayload = {
           reg_nr: regNr,
-          model: row.modell || row.model || '',
-          year_model: row.arsmodell || row.year_model || '',
-          vin: row.vin || row.chassinummer || '',
-          customer_name: row.kundnamn || row.customer_name || '',
-          customer_phone: row.telefon || row.customer_phone || ''
+          model: row['märke & modell'] || row.modell || row.model || '',
+          year_model: row['årsmodell'] || row.arsmodell || row.year_model || '',
+          vin: row['chassinummer (vin)'] || row.vin || row.chassinummer || '',
+          customer_name: row['kundens namn'] || row.kundnamn || row.customer_name || '',
+          customer_phone: row['telefonnummer'] || row.telefon || row.customer_phone || ''
         };
         await supabaseClient.from('vehicles').upsert(vPayload, { onConflict: 'reg_nr' });
 
-        // إدخال سجل الصيانة
-        const isCust = (row.materialkalla || '').toLowerCase().includes('kund');
-        const notesRaw = row.noteringar || row.notes || '';
+        const isCust = (row['materialkälla'] || row.materialkalla || '').toLowerCase().includes('kund');
+        const notesRaw = row['mekanikernoteringar'] || row.noteringar || row.notes || '';
         const sourceTag = isCust ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
         const finalNotes = `${sourceTag} ${notesRaw}`.trim();
 
         const sPayload = {
           reg_nr: regNr,
-          service_date: row.servicedatum || row.service_date || new Date().toISOString().substring(0, 10),
-          mileage: parseInt(row.matarstallning_km || row.mileage) || 0,
-          oil_brand_type: row.motorolja || row.oil_brand_type || '',
-          oil_filter: ['ja', 'true', '1'].includes((row.oljefilter || '').toLowerCase()),
-          air_filter: ['ja', 'true', '1'].includes((row.luftfilter || '').toLowerCase()),
-          cabin_filter: ['ja', 'true', '1'].includes((row.kupefilter || '').toLowerCase()),
-          fuel_filter: ['ja', 'true', '1'].includes((row.branslefilter || '').toLowerCase()),
-          spark_plugs: ['ja', 'true', '1'].includes((row.tandstift || '').toLowerCase()),
-          next_service_mileage: parseInt(row.nasta_service_km || row.next_service_mileage) || null,
-          next_service_date: row.nasta_service_datum || row.next_service_date || null,
-          mechanic: row.mekaniker || row.mechanic || 'ASR Bilservice',
+          service_date: row['servicedatum'] || row.service_date || new Date().toISOString().substring(0, 10),
+          mileage: parseInt(row['mätarställning (km)'] || row.matarstallning_km || row.mileage) || 0,
+          oil_brand_type: row['motorolja'] || row.oil_brand_type || '',
+          oil_filter: ['ja', 'true', '1'].includes((row['oljefilter'] || row.oljefilter || '').toLowerCase()),
+          air_filter: ['ja', 'true', '1'].includes((row['luftfilter'] || row.luftfilter || '').toLowerCase()),
+          cabin_filter: ['ja', 'true', '1'].includes((row['kupéfilter'] || row.kupefilter || '').toLowerCase()),
+          fuel_filter: ['ja', 'true', '1'].includes((row['bränslefilter'] || row.branslefilter || '').toLowerCase()),
+          spark_plugs: ['ja', 'true', '1'].includes((row['tändstift'] || row.tandstift || '').toLowerCase()),
+          next_service_mileage: parseInt(row['nästa service (km)'] || row.nasta_service_km || row.next_service_mileage) || null,
+          next_service_date: row['nästa service datum'] || row.nasta_service_datum || row.next_service_date || null,
+          mechanic: row['ansvarig mekaniker'] || row.mekaniker || row.mechanic || 'ASR Bilservice',
           notes: finalNotes
         };
 

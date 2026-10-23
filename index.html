@@ -683,7 +683,7 @@
     <div class="auth-btn-group">
       <button id="btnExportData" class="auth-btn btn-excel" style="display: none;" onclick="exportAllDataToExcel()">📥 <span data-i18n="btnExport">Exportera Excel</span></button>
       <button id="btnImportData" class="auth-btn btn-excel" style="display: none;" onclick="triggerImportCSV()">📤 <span data-i18n="btnImport">Importera Excel</span></button>
-      <input type="file" id="csvFileInput" accept=".csv, .xls, .xlsx" style="display: none;" onchange="handleCSVImport(event)">
+      <input type="file" id="csvFileInput" accept=".csv, .xls, .htm, .html" style="display: none;" onchange="handleCSVImport(event)">
 
       <button id="btnAllRecords" class="auth-btn btn-archive" style="display: none;" onclick="toggleAllVehiclesView()">📋 <span data-i18n="btnAllRecords">Alla bilar & poster</span></button>
       <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
@@ -1444,7 +1444,7 @@
     }
   }
 
-  // --- تصدير جدول إكسيل حقيقي متناسق بأعمدة مستقلة ---
+  // --- تصدير إكسيل حقيقي متناسق ---
   async function exportAllDataToExcel() {
     if (!currentUser) return;
     
@@ -1474,7 +1474,7 @@
         <meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
         <style>
           th { background-color: #0b1120; color: #f59e0b; font-weight: bold; padding: 10px; border: 1px solid #cbd5e1; }
-          td { padding: 8px; border: 1px solid #e2e8f0; font-family: Arial, sans-serif; }
+          td { padding: 8px; border: 1px solid #e2e8f0; font-family: Arial, sans-serif; mso-number-format:"\\@"; }
           .reg { font-weight: bold; color: #b45309; }
         </style>
       </head>
@@ -1532,60 +1532,144 @@
     document.getElementById('csvFileInput').click();
   }
 
+  // دالة تحويل وضبط صيغة التواريخ من أي شكل إلى YYYY-MM-DD
+  function parseStandardDate(str) {
+    if (!str) return null;
+    str = str.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+    // إذا كان التاريخ DD/MM/YYYY أو DD-MM-YYYY
+    const parts = str.split(/[\/\-\.]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      } else if (parts[2].length === 4) {
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+    return null;
+  }
+
+  // --- محرك الاستيراد الذكي (يدعم ملفات HTML/XLS وملفات CSV) ---
   async function handleCSVImport(event) {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = async function(e) {
-      const text = e.target.result;
-      const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
-      if (lines.length < 2) {
-        alert("Filen är tom eller saknar rader.");
+      const content = e.target.result;
+      let rowsData = [];
+
+      // إذا كان الملف بتنسيق HTML/XLS (المصدّر من الموقع)
+      if (content.includes('<table') || content.includes('<tr')) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(content, 'text/html');
+        const rows = doc.querySelectorAll('tr');
+
+        rows.forEach((tr, rIdx) => {
+          if (rIdx === 0) return; // تخطي رأس الجدول
+          const tds = tr.querySelectorAll('td');
+          if (tds.length >= 8) {
+            rowsData.push({
+              reg_nr: tds[0]?.textContent?.trim().toUpperCase(),
+              model: tds[1]?.textContent?.trim(),
+              year_model: tds[2]?.textContent?.trim(),
+              vin: tds[3]?.textContent?.trim(),
+              customer_name: tds[4]?.textContent?.trim(),
+              customer_phone: tds[5]?.textContent?.trim(),
+              service_date: parseStandardDate(tds[6]?.textContent),
+              mileage: parseInt(tds[7]?.textContent?.replace(/\D/g, '')) || 0,
+              oil_brand_type: tds[8]?.textContent?.trim() || '',
+              materialkalla: tds[9]?.textContent?.trim() || '',
+              oil_filter: ['ja', 'true', '1'].includes(tds[10]?.textContent?.trim().toLowerCase()),
+              air_filter: ['ja', 'true', '1'].includes(tds[11]?.textContent?.trim().toLowerCase()),
+              cabin_filter: ['ja', 'true', '1'].includes(tds[12]?.textContent?.trim().toLowerCase()),
+              fuel_filter: ['ja', 'true', '1'].includes(tds[13]?.textContent?.trim().toLowerCase()),
+              spark_plugs: ['ja', 'true', '1'].includes(tds[14]?.textContent?.trim().toLowerCase()),
+              next_service_mileage: parseInt(tds[15]?.textContent?.replace(/\D/g, '')) || null,
+              next_service_date: parseStandardDate(tds[16]?.textContent),
+              mechanic: tds[17]?.textContent?.trim() || 'ASR Bilservice',
+              notes: tds[18]?.textContent?.trim() || ''
+            });
+          }
+        });
+      } else {
+        // إذا كان الملف بصيغة نصية CSV
+        const lines = content.split(/\r\n|\n/).filter(line => line.trim() !== '');
+        if (lines.length >= 2) {
+          const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+          const headers = lines[0].split(delimiter).map(h => h.replace(/["\r]/g, '').trim().toLowerCase());
+
+          for (let i = 1; i < lines.length; i++) {
+            const rawCols = lines[i].split(delimiter).map(c => c.replace(/^["\s]+|["\s]+$/g, '').trim());
+            const row = {};
+            headers.forEach((h, idx) => { row[h] = rawCols[idx] || ''; });
+
+            const reg = (row['reg.nr'] || row.regnr || row.reg_nr || row['registreringsnummer'] || rawCols[0] || '').toUpperCase();
+            if (!reg) continue;
+
+            rowsData.push({
+              reg_nr: reg,
+              model: row['märke & modell'] || row.modell || row.model || rawCols[1] || '',
+              year_model: row['årsmodell'] || row.arsmodell || row.year_model || rawCols[2] || '',
+              vin: row['chassinummer (vin)'] || row.vin || row.chassinummer || rawCols[3] || '',
+              customer_name: row['kundens namn'] || row.kundnamn || row.customer_name || rawCols[4] || '',
+              customer_phone: row['telefonnummer'] || row.telefon || row.customer_phone || rawCols[5] || '',
+              service_date: parseStandardDate(row['servicedatum'] || row.service_date || rawCols[6]) || new Date().toISOString().substring(0, 10),
+              mileage: parseInt(row['mätarställning (km)'] || row.matarstallning_km || row.mileage || rawCols[7]) || 0,
+              oil_brand_type: row['motorolja'] || row.oil_brand_type || rawCols[8] || '',
+              materialkalla: row['materialkälla'] || row.materialkalla || rawCols[9] || '',
+              oil_filter: ['ja', 'true', '1'].includes((row['oljefilter'] || rawCols[10] || '').toLowerCase()),
+              air_filter: ['ja', 'true', '1'].includes((row['luftfilter'] || rawCols[11] || '').toLowerCase()),
+              cabin_filter: ['ja', 'true', '1'].includes((row['kupéfilter'] || rawCols[12] || '').toLowerCase()),
+              fuel_filter: ['ja', 'true', '1'].includes((row['bränslefilter'] || rawCols[13] || '').toLowerCase()),
+              spark_plugs: ['ja', 'true', '1'].includes((row['tändstift'] || rawCols[14] || '').toLowerCase()),
+              next_service_mileage: parseInt(row['nästa service (km)'] || rawCols[15]) || null,
+              next_service_date: parseStandardDate(row['nästa service datum'] || rawCols[16]),
+              mechanic: row['ansvarig mekaniker'] || row.mekaniker || rawCols[17] || 'ASR Bilservice',
+              notes: row['mekanikernoteringar'] || row.noteringar || rawCols[18] || ''
+            });
+          }
+        }
+      }
+
+      if (rowsData.length === 0) {
+        alert("Ingen giltig data kunde läsas från filen. Kontrollera filen.");
         return;
       }
 
-      const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
-      const headers = lines[0].split(delimiter).map(h => h.replace(/["\r]/g, '').trim().toLowerCase());
-
       let importedCount = 0;
+      for (const item of rowsData) {
+        if (!item.reg_nr) continue;
 
-      for (let i = 1; i < lines.length; i++) {
-        const rawCols = lines[i].split(delimiter).map(c => c.replace(/^["\s]+|["\s]+$/g, '').trim());
-        const row = {};
-        headers.forEach((h, idx) => { row[h] = rawCols[idx] || ''; });
-
-        const regNr = (row['reg.nr'] || row.regnr || row.reg_nr || row['registreringsnummer'] || '').toUpperCase();
-        if (!regNr) continue;
-
+        // 1. تحديث أو إدخال ملف السيارة
         const vPayload = {
-          reg_nr: regNr,
-          model: row['märke & modell'] || row.modell || row.model || '',
-          year_model: row['årsmodell'] || row.arsmodell || row.year_model || '',
-          vin: row['chassinummer (vin)'] || row.vin || row.chassinummer || '',
-          customer_name: row['kundens namn'] || row.kundnamn || row.customer_name || '',
-          customer_phone: row['telefonnummer'] || row.telefon || row.customer_phone || ''
+          reg_nr: item.reg_nr,
+          model: item.model,
+          year_model: item.year_model,
+          vin: item.vin,
+          customer_name: item.customer_name,
+          customer_phone: item.customer_phone
         };
         await supabaseClient.from('vehicles').upsert(vPayload, { onConflict: 'reg_nr' });
 
-        const isCust = (row['materialkälla'] || row.materialkalla || '').toLowerCase().includes('kund');
-        const notesRaw = row['mekanikernoteringar'] || row.noteringar || row.notes || '';
+        // 2. إدخال سجل الصيانة
+        const isCust = (item.materialkalla || '').toLowerCase().includes('kund');
         const sourceTag = isCust ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
-        const finalNotes = `${sourceTag} ${notesRaw}`.trim();
+        const finalNotes = `${sourceTag} ${item.notes}`.trim();
 
         const sPayload = {
-          reg_nr: regNr,
-          service_date: row['servicedatum'] || row.service_date || new Date().toISOString().substring(0, 10),
-          mileage: parseInt(row['mätarställning (km)'] || row.matarstallning_km || row.mileage) || 0,
-          oil_brand_type: row['motorolja'] || row.oil_brand_type || '',
-          oil_filter: ['ja', 'true', '1'].includes((row['oljefilter'] || row.oljefilter || '').toLowerCase()),
-          air_filter: ['ja', 'true', '1'].includes((row['luftfilter'] || row.luftfilter || '').toLowerCase()),
-          cabin_filter: ['ja', 'true', '1'].includes((row['kupéfilter'] || row.kupefilter || '').toLowerCase()),
-          fuel_filter: ['ja', 'true', '1'].includes((row['bränslefilter'] || row.branslefilter || '').toLowerCase()),
-          spark_plugs: ['ja', 'true', '1'].includes((row['tändstift'] || row.tandstift || '').toLowerCase()),
-          next_service_mileage: parseInt(row['nästa service (km)'] || row.nasta_service_km || row.next_service_mileage) || null,
-          next_service_date: row['nästa service datum'] || row.nasta_service_datum || row.next_service_date || null,
-          mechanic: row['ansvarig mekaniker'] || row.mekaniker || row.mechanic || 'ASR Bilservice',
+          reg_nr: item.reg_nr,
+          service_date: item.service_date || new Date().toISOString().substring(0, 10),
+          mileage: item.mileage,
+          oil_brand_type: item.oil_brand_type,
+          oil_filter: item.oil_filter,
+          air_filter: item.air_filter,
+          cabin_filter: item.cabin_filter,
+          fuel_filter: item.fuel_filter,
+          spark_plugs: item.spark_plugs,
+          next_service_mileage: item.next_service_mileage,
+          next_service_date: item.next_service_date,
+          mechanic: item.mechanic,
           notes: finalNotes
         };
 
@@ -1593,7 +1677,7 @@
         if (!error) importedCount++;
       }
 
-      alert(`Import slutförd! ${importedCount} serviceposter har importerats.`);
+      alert(`✅ Klart! ${importedCount} serviceposter har importerats till systemet.`);
       event.target.value = '';
       if (currentReg) loadVehicleData(currentReg);
     };

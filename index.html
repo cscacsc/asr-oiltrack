@@ -105,7 +105,15 @@
       margin-right: auto;
       object-fit: contain;
     }
-    .logo-text { font-size: 30px; font-weight: 900; letter-spacing: 2px; color: var(--accent-gold); }
+    .logo-text {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--accent-gold);
+      cursor: default;
+      user-select: none;
+      display: inline-block;
+    }
     .logo-sub { font-size: 13px; font-weight: 700; color: #e2e8f0; letter-spacing: 3px; margin-top: -2px; }
     header h1 { font-size: 20px; font-weight: 700; color: var(--text-main); margin-top: 10px; }
     header p { color: var(--accent-blue); font-size: 13px; font-weight: 600; margin-top: 4px; }
@@ -673,7 +681,7 @@
 <body>
 
 <div class="container">
-  <!-- Top Bar: Languages & Admin Auth -->
+  <!-- Top Bar: Languages & Secret Admin Controls -->
   <div class="top-bar">
     <div class="lang-bar">
       <button class="lang-btn active" data-lang="sv" onclick="setLanguage('sv')" title="Svenska">🇸🇪</button>
@@ -686,13 +694,14 @@
       <input type="file" id="csvFileInput" accept=".csv, .xls, .htm, .html" style="display: none;" onchange="handleCSVImport(event)">
 
       <button id="btnAllRecords" class="auth-btn btn-archive" style="display: none;" onclick="toggleAllVehiclesView()">📋 <span data-i18n="btnAllRecords">Alla bilar & poster</span></button>
-      <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
+      <button id="authBtn" class="auth-btn" style="display: none;" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
     </div>
   </div>
 
   <header>
     <img src="logo.png" alt="ASR Bilservice AB" class="header-logo" onerror="this.style.display='none'">
-    <div class="logo-text">ASR</div>
+    <!-- انقر 3 مرات على كلمة ASR لفتح نافذة تسجيل الدخول للمسؤول سراً -->
+    <div class="logo-text" onclick="handleSecretLogoClick()" title="ASR Bilservice AB">ASR</div>
     <div class="logo-sub">BILSERVICE AB</div>
     <h1 data-i18n="headerTitle">Digital Servicebok & Protokoll</h1>
     <p data-i18n="headerSub">Auktoriserad Verkstad & Serviceportal</p>
@@ -768,7 +777,7 @@
       </div>
     </div>
 
-    <!-- 2. Feature Card: Engine Oil (Professional Oil Can SVG) -->
+    <!-- 2. Feature Card: Engine Oil -->
     <div class="feature-card">
       <div class="feature-icon-box icon-oil">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -786,7 +795,7 @@
       </div>
     </div>
 
-    <!-- 3. Feature Card: Filters & Parts with Custom Icons -->
+    <!-- 3. Feature Card: Filters & Parts -->
     <div class="feature-card" style="flex-direction: column;">
       <div style="display: flex; align-items: center; gap: 14px; width: 100%;">
         <div class="feature-icon-box icon-filter">
@@ -925,7 +934,7 @@
     </div>
   </div>
 
-  <!-- Modern Timeline History (Cards on mobile) -->
+  <!-- Modern Timeline History -->
   <div id="historyCard" class="card" style="display: none;">
     <div class="card-title" data-i18n="historyTitle">📜 Servicehistorik</div>
     <div id="historyListContainer"></div>
@@ -1093,6 +1102,8 @@
   let currentUser = null;
   let lastSearchedNotFoundReg = '';
   let regCheckTimeout = null;
+  let logoClicks = 0;
+  let logoClickTimer = null;
 
   const translations = {
     sv: {
@@ -1226,6 +1237,8 @@
       btnAllRecords: "All Vehicles & Records",
       allVehiclesTitle: "📋 All Registered Vehicles & Records",
       btnCloseArchive: "Close Archive",
+      btnExport: "Export Excel",
+      btnImport: "Import Excel",
       thAllReg: "Reg.nr",
       thAllCar: "Make / Model",
       thAllOwner: "Customer / Owner",
@@ -1373,6 +1386,20 @@
     }
   }
 
+  // --- النقر السري: اضغط 3 مرات على كلمة ASR في الشعار لإظهار نافذة تسجيل الدخول للمسؤول ---
+  function handleSecretLogoClick() {
+    logoClicks++;
+    clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClicks = 0; }, 1000);
+
+    if (logoClicks >= 3) {
+      logoClicks = 0;
+      const authBtn = document.getElementById('authBtn');
+      if (authBtn) authBtn.style.display = 'inline-flex';
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+  }
+
   // --- ميزة التعرف التلقائي الذكي على السيارة وتعبئة بياناتها السابقة فوراً ---
   async function handleRegAutoCheck(force = false) {
     const regInput = document.getElementById('regNr');
@@ -1436,6 +1463,7 @@
 
   function handleAuthState(user) {
     currentUser = user;
+    const authBtn = document.getElementById('authBtn');
     const authBtnText = document.getElementById('authBtnText');
     const adminSection = document.getElementById('adminSection');
     const adminActionRow = document.getElementById('adminActionRow');
@@ -1443,7 +1471,11 @@
     const btnExportData = document.getElementById('btnExportData');
     const btnImportData = document.getElementById('btnImportData');
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAdminParam = urlParams.get('admin') === '1' || urlParams.has('mekaniker');
+
     if (user) {
+      if (authBtn) authBtn.style.display = 'inline-flex';
       authBtnText.textContent = "Logga ut (" + user.email.split('@')[0] + ")";
       adminSection.style.display = 'block';
       adminActionRow.style.display = 'grid';
@@ -1457,6 +1489,10 @@
       }
     } else {
       authBtnText.textContent = "Logga in (Mekaniker)";
+      // إخفاء زر الدخول عن الزبائن تماماً إلا إذا فُتح بالرابط السري ?admin=1
+      if (authBtn) {
+        authBtn.style.display = hasAdminParam ? 'inline-flex' : 'none';
+      }
       adminSection.style.display = 'none';
       adminActionRow.style.display = 'none';
       if (btnAllRecords) btnAllRecords.style.display = 'none';

@@ -1292,8 +1292,6 @@
       btnAllRecords: "كل السيارات والسجلات",
       allVehiclesTitle: "📋 جميع السيارات المسجلة وسجلات الفحص",
       btnCloseArchive: "إغلاق الأرشيف",
-      btnExport: "تصدير نسخة إكسيل",
-      btnImport: "استيراد من إكسيل",
       thAllReg: "رقم اللوحة",
       thAllCar: "الموديل والماركة",
       thAllOwner: "اسم العميل",
@@ -1533,7 +1531,7 @@
 
   function parseStandardDate(str) {
     if (!str) return null;
-    str = str.trim();
+    str = String(str).trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
     const parts = str.split(/[\/\-\.]/);
     if (parts.length === 3) {
@@ -1546,6 +1544,14 @@
     return null;
   }
 
+  // دالة مساعدة لمعرفة هل القيمة نعم / Ja / True
+  function isTrueValue(val) {
+    if (!val) return false;
+    const clean = String(val).toLowerCase().replace(/[^a-z0-9]/g, '');
+    return ['ja', 'true', '1', 'yes'].includes(clean);
+  }
+
+  // محرك الاستيراد المصحح بدقة للتعرف على فلتر الزيت والكمية والتواريخ
   async function handleCSVImport(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1575,11 +1581,11 @@
               mileage: parseInt(tds[7]?.textContent?.replace(/\D/g, '')) || 0,
               oil_brand_type: tds[8]?.textContent?.trim() || '',
               materialkalla: tds[9]?.textContent?.trim() || '',
-              oil_filter: ['ja', 'true', '1'].includes(tds[10]?.textContent?.trim().toLowerCase()),
-              air_filter: ['ja', 'true', '1'].includes(tds[11]?.textContent?.trim().toLowerCase()),
-              cabin_filter: ['ja', 'true', '1'].includes(tds[12]?.textContent?.trim().toLowerCase()),
-              fuel_filter: ['ja', 'true', '1'].includes(tds[13]?.textContent?.trim().toLowerCase()),
-              spark_plugs: ['ja', 'true', '1'].includes(tds[14]?.textContent?.trim().toLowerCase()),
+              oil_filter: isTrueValue(tds[10]?.textContent),
+              air_filter: isTrueValue(tds[11]?.textContent),
+              cabin_filter: isTrueValue(tds[12]?.textContent),
+              fuel_filter: isTrueValue(tds[13]?.textContent),
+              spark_plugs: isTrueValue(tds[14]?.textContent),
               next_service_mileage: parseInt(tds[15]?.textContent?.replace(/\D/g, '')) || null,
               next_service_date: parseStandardDate(tds[16]?.textContent),
               mechanic: tds[17]?.textContent?.trim() || 'ASR Bilservice',
@@ -1591,36 +1597,40 @@
         const lines = content.split(/\r\n|\n/).filter(line => line.trim() !== '');
         if (lines.length >= 2) {
           const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
-          const headers = lines[0].split(delimiter).map(h => h.replace(/["\r]/g, '').trim().toLowerCase());
+          // تنظيف رؤوس الأعمدة من BOM والمسافات وعلامات التنصيص
+          const headers = lines[0].split(delimiter).map(h => h.replace(/[\ufeff"'\r\n]/g, '').trim().toLowerCase());
 
           for (let i = 1; i < lines.length; i++) {
             const rawCols = lines[i].split(delimiter).map(c => c.replace(/^["\s]+|["\s]+$/g, '').trim());
             const row = {};
             headers.forEach((h, idx) => { row[h] = rawCols[idx] || ''; });
 
-            const reg = (row['reg.nr'] || row.regnr || row.reg_nr || row['registreringsnummer'] || rawCols[0] || '').toUpperCase();
+            const reg = (row['reg.nr'] || row['regnr'] || row['reg_nr'] || row['registreringsnummer'] || rawCols[0] || '').toUpperCase();
             if (!reg) continue;
+
+            // تحديد عمود فلتر الزيت بدقة سواء عبر الاسم أو بالعمود 11 (index 10)
+            const oilFilterVal = row['oljefilter'] || row['oljefilter (byte)'] || rawCols[10];
 
             rowsData.push({
               reg_nr: reg,
-              model: row['märke & modell'] || row.modell || row.model || rawCols[1] || '',
-              year_model: row['årsmodell'] || row.arsmodell || row.year_model || rawCols[2] || '',
-              vin: row['chassinummer (vin)'] || row.vin || row.chassinummer || rawCols[3] || '',
-              customer_name: row['kundens namn'] || row.kundnamn || row.customer_name || rawCols[4] || '',
-              customer_phone: row['telefonnummer'] || row.telefon || row.customer_phone || rawCols[5] || '',
-              service_date: parseStandardDate(row['servicedatum'] || row.service_date || rawCols[6]) || new Date().toISOString().substring(0, 10),
-              mileage: parseInt(row['mätarställning (km)'] || row.matarstallning_km || row.mileage || rawCols[7]) || 0,
-              oil_brand_type: row['motorolja'] || row.oil_brand_type || rawCols[8] || '',
-              materialkalla: row['materialkälla'] || row.materialkalla || rawCols[9] || '',
-              oil_filter: ['ja', 'true', '1'].includes((row['oljefilter'] || rawCols[10] || '').toLowerCase()),
-              air_filter: ['ja', 'true', '1'].includes((row['luftfilter'] || rawCols[11] || '').toLowerCase()),
-              cabin_filter: ['ja', 'true', '1'].includes((row['kupéfilter'] || rawCols[12] || '').toLowerCase()),
-              fuel_filter: ['ja', 'true', '1'].includes((row['bränslefilter'] || rawCols[13] || '').toLowerCase()),
-              spark_plugs: ['ja', 'true', '1'].includes((row['tändstift'] || rawCols[14] || '').toLowerCase()),
-              next_service_mileage: parseInt(row['nästa service (km)'] || rawCols[15]) || null,
-              next_service_date: parseStandardDate(row['nästa service datum'] || rawCols[16]),
-              mechanic: row['ansvarig mekaniker'] || row.mekaniker || rawCols[17] || 'ASR Bilservice',
-              notes: row['mekanikernoteringar'] || row.noteringar || rawCols[18] || ''
+              model: row['märke & modell'] || row['modell'] || row['model'] || rawCols[1] || '',
+              year_model: row['årsmodell'] || row['arsmodell'] || row['year_model'] || rawCols[2] || '',
+              vin: row['chassinummer (vin)'] || row['vin'] || row['chassinummer'] || rawCols[3] || '',
+              customer_name: row['kundens namn'] || row['kundnamn'] || row['customer_name'] || rawCols[4] || '',
+              customer_phone: row['telefonnummer'] || row['telefon'] || row['customer_phone'] || rawCols[5] || '',
+              service_date: parseStandardDate(row['servicedatum'] || row['service_date'] || rawCols[6]) || new Date().toISOString().substring(0, 10),
+              mileage: parseInt(row['mätarställning (km)'] || row['matarstallning_km'] || row['mileage'] || rawCols[7]) || 0,
+              oil_brand_type: row['motorolja'] || row['oil_brand_type'] || rawCols[8] || '',
+              materialkalla: row['materialkälla'] || row['materialkalla'] || rawCols[9] || '',
+              oil_filter: isTrueValue(oilFilterVal),
+              air_filter: isTrueValue(row['luftfilter'] || rawCols[11]),
+              cabin_filter: isTrueValue(row['kupéfilter'] || row['kupefilter'] || rawCols[12]),
+              fuel_filter: isTrueValue(row['bränslefilter'] || row['branslefilter'] || rawCols[13]),
+              spark_plugs: isTrueValue(row['tändstift'] || row['tandstift'] || rawCols[14]),
+              next_service_mileage: parseInt(row['nästa service (km)'] || row['nasta_service_km'] || rawCols[15]) || null,
+              next_service_date: parseStandardDate(row['nästa service datum'] || row['nasta_service_datum'] || rawCols[16]),
+              mechanic: row['ansvarig mekaniker'] || row['mekaniker'] || row['mechanic'] || rawCols[17] || 'ASR Bilservice',
+              notes: row['mekanikernoteringar'] || row['noteringar'] || row['notes'] || rawCols[18] || ''
             });
           }
         }
@@ -1651,13 +1661,11 @@
 
         const sDate = item.service_date || new Date().toISOString().substring(0, 10);
         
-        // حساب تلقائي للكم التالي إن كان فارغاً
         let finalNextMileage = item.next_service_mileage;
         if (!finalNextMileage && item.mileage > 0) {
           finalNextMileage = item.mileage + 15000;
         }
 
-        // حساب تلقائي للتاريخ التالي (+1 سنة) إن كان فارغاً
         let finalNextDate = item.next_service_date;
         if (!finalNextDate && sDate) {
           const d = new Date(sDate);
@@ -1977,6 +1985,7 @@
     });
   }
 
+  // دالة ذكية ومصححة لاستخراج الكمية واسم الزيت بشكل نظيف
   function editServiceRecord(recordId) {
     const s = cachedServices.find(item => item.id == recordId);
     if (!s) return;
@@ -1986,14 +1995,17 @@
     document.getElementById('mileage').value = s.mileage || '';
     document.getElementById('mechanic').value = s.mechanic || '';
     
-    let oilStr = s.oil_brand_type || '';
+    let rawOil = s.oil_brand_type || '';
     let extractedQty = '';
-    const match = oilStr.match(/\(([\d\.]+)\s*L\)$/i);
+    
+    // دعم كلا النمطين: (5.2L) أو (5,2L) أو (5.2) مع أو بدون حرف L
+    const match = rawOil.match(/\(([\d\.,]+)\s*l?\)$/i);
     if (match) {
-      extractedQty = match[1];
-      oilStr = oilStr.replace(/\s*\([\d\.]+\s*L\)$/i, '').trim();
+      extractedQty = match[1].replace(',', '.');
+      rawOil = rawOil.replace(/\s*\([\d\.,]+\s*l?\)$/i, '').trim();
     }
-    document.getElementById('oilDetails').value = oilStr;
+    
+    document.getElementById('oilDetails').value = rawOil;
     document.getElementById('oilQty').value = extractedQty;
 
     if (s.notes && s.notes.includes('[KÄLLA: KUND]')) {
@@ -2145,7 +2157,8 @@
     const inputDate = document.getElementById('serviceDate').value || new Date().toISOString().substring(0, 10);
     
     const oilName = document.getElementById('oilDetails').value.trim();
-    const oilQtyVal = document.getElementById('oilQty').value.trim();
+    let oilQtyVal = document.getElementById('oilQty').value.trim();
+    oilQtyVal = oilQtyVal.replace(',', '.');
     const finalOilString = oilQtyVal ? `${oilName} (${oilQtyVal}L)`.trim() : oilName;
 
     const sourceVal = document.getElementById('partsSource').value;
@@ -2166,13 +2179,11 @@
 
     const currentMileage = parseInt(document.getElementById('mileage').value) || 0;
     
-    // حساب تلقائي للكم التالي إن ترك فارغاً
     let nextMileageVal = parseInt(document.getElementById('nextMileage').value);
     if (isNaN(nextMileageVal) || !nextMileageVal) {
       nextMileageVal = currentMileage > 0 ? currentMileage + 15000 : null;
     }
 
-    // حساب تلقائي للتاريخ التالي إن ترك فارغاً (+1 سنة)
     let nextDateVal = document.getElementById('nextDate').value;
     if (!nextDateVal && inputDate) {
       const d = new Date(inputDate);

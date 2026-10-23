@@ -865,7 +865,7 @@
         </div>
         <div class="form-group">
           <label data-i18n="lblMechanic">Mekaniker</label>
-          <input type="text" id="mechanic" placeholder="T.ex. Ahmed">
+          <input type="text" id="mechanic" placeholder="T.ex. AHD">
         </div>
         <div class="form-group">
           <label data-i18n="lblOil">Motorolja (Märke & Viskositet)</label>
@@ -1292,6 +1292,8 @@
       btnAllRecords: "كل السيارات والسجلات",
       allVehiclesTitle: "📋 جميع السيارات المسجلة وسجلات الفحص",
       btnCloseArchive: "إغلاق الأرشيف",
+      btnExport: "تصدير نسخة إكسيل",
+      btnImport: "استيراد من إكسيل",
       thAllReg: "رقم اللوحة",
       thAllCar: "الموديل والماركة",
       thAllOwner: "اسم العميل",
@@ -1544,14 +1546,13 @@
     return null;
   }
 
-  // دالة مساعدة لمعرفة هل القيمة نعم / Ja / True
   function isTrueValue(val) {
     if (!val) return false;
     const clean = String(val).toLowerCase().replace(/[^a-z0-9]/g, '');
     return ['ja', 'true', '1', 'yes'].includes(clean);
   }
 
-  // محرك الاستيراد المصحح بدقة للتعرف على فلتر الزيت والكمية والتواريخ
+  // --- محرك الاستيراد والتحديث الذكي (Upsert & Auto-Correction) ---
   async function handleCSVImport(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1588,7 +1589,7 @@
               spark_plugs: isTrueValue(tds[14]?.textContent),
               next_service_mileage: parseInt(tds[15]?.textContent?.replace(/\D/g, '')) || null,
               next_service_date: parseStandardDate(tds[16]?.textContent),
-              mechanic: tds[17]?.textContent?.trim() || 'ASR Bilservice',
+              mechanic: tds[17]?.textContent?.trim() || 'AHD',
               notes: tds[18]?.textContent?.trim() || ''
             });
           }
@@ -1597,7 +1598,6 @@
         const lines = content.split(/\r\n|\n/).filter(line => line.trim() !== '');
         if (lines.length >= 2) {
           const delimiter = lines[0].includes(';') ? ';' : (lines[0].includes('\t') ? '\t' : ',');
-          // تنظيف رؤوس الأعمدة من BOM والمسافات وعلامات التنصيص
           const headers = lines[0].split(delimiter).map(h => h.replace(/[\ufeff"'\r\n]/g, '').trim().toLowerCase());
 
           for (let i = 1; i < lines.length; i++) {
@@ -1608,7 +1608,6 @@
             const reg = (row['reg.nr'] || row['regnr'] || row['reg_nr'] || row['registreringsnummer'] || rawCols[0] || '').toUpperCase();
             if (!reg) continue;
 
-            // تحديد عمود فلتر الزيت بدقة سواء عبر الاسم أو بالعمود 11 (index 10)
             const oilFilterVal = row['oljefilter'] || row['oljefilter (byte)'] || rawCols[10];
 
             rowsData.push({
@@ -1629,7 +1628,7 @@
               spark_plugs: isTrueValue(row['tändstift'] || row['tandstift'] || rawCols[14]),
               next_service_mileage: parseInt(row['nästa service (km)'] || row['nasta_service_km'] || rawCols[15]) || null,
               next_service_date: parseStandardDate(row['nästa service datum'] || row['nasta_service_datum'] || rawCols[16]),
-              mechanic: row['ansvarig mekaniker'] || row['mekaniker'] || row['mechanic'] || rawCols[17] || 'ASR Bilservice',
+              mechanic: row['ansvarig mekaniker'] || row['mekaniker'] || row['mechanic'] || rawCols[17] || 'AHD',
               notes: row['mekanikernoteringar'] || row['noteringar'] || row['notes'] || rawCols[18] || ''
             });
           }
@@ -1641,10 +1640,13 @@
         return;
       }
 
-      let importedCount = 0;
+      let updatedCount = 0;
+      let insertedCount = 0;
+
       for (const item of rowsData) {
         if (!item.reg_nr) continue;
 
+        // 1. تحديث أو إدخال السيارة
         const vPayload = {
           reg_nr: item.reg_nr,
           model: item.model,
@@ -1655,10 +1657,10 @@
         };
         await supabaseClient.from('vehicles').upsert(vPayload, { onConflict: 'reg_nr' });
 
+        // 2. تجهيز بيانات الصيانة
         const isCust = (item.materialkalla || '').toLowerCase().includes('kund');
         const sourceTag = isCust ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
         const finalNotes = `${sourceTag} ${item.notes}`.trim();
-
         const sDate = item.service_date || new Date().toISOString().substring(0, 10);
         
         let finalNextMileage = item.next_service_mileage;
@@ -1689,11 +1691,31 @@
           notes: finalNotes
         };
 
-        const { error } = await supabaseClient.from('service_records').insert([sPayload]);
-        if (!error) importedCount++;
+        // 3. الفحص الذكي: هل يوجد سجل لنفس السيارة بنفس التاريخ لتصحيحه بدلاً من تكراره؟
+        const { data: existingRecords } = await supabaseClient
+          .from('service_records')
+          .select('id')
+          .eq('reg_nr', item.reg_nr)
+          .eq('service_date', sDate)
+          .limit(1);
+
+        if (existingRecords && existingRecords.length > 0) {
+          // تصحيح وتحديث السجل القديم
+          const { error: upErr } = await supabaseClient
+            .from('service_records')
+            .update(sPayload)
+            .eq('id', existingRecords[0].id);
+          if (!upErr) updatedCount++;
+        } else {
+          // إضافة سجل جديد تماماً
+          const { error: insErr } = await supabaseClient
+            .from('service_records')
+            .insert([sPayload]);
+          if (!insErr) insertedCount++;
+        }
       }
 
-      alert(`✅ Klart! ${importedCount} serviceposter har importerats till systemet.`);
+      alert(`✅ Klart! Import slutförd:\n- ${updatedCount} befintliga poster uppdaterades (korrigerades).\n- ${insertedCount} nya poster lades till.`);
       event.target.value = '';
       if (currentReg) loadVehicleData(currentReg);
     };
@@ -1985,7 +2007,6 @@
     });
   }
 
-  // دالة ذكية ومصححة لاستخراج الكمية واسم الزيت بشكل نظيف
   function editServiceRecord(recordId) {
     const s = cachedServices.find(item => item.id == recordId);
     if (!s) return;
@@ -1998,7 +2019,6 @@
     let rawOil = s.oil_brand_type || '';
     let extractedQty = '';
     
-    // دعم كلا النمطين: (5.2L) أو (5,2L) أو (5.2) مع أو بدون حرف L
     const match = rawOil.match(/\(([\d\.,]+)\s*l?\)$/i);
     if (match) {
       extractedQty = match[1].replace(',', '.');

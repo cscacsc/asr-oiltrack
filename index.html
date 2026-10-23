@@ -1921,7 +1921,7 @@
     document.getElementById('sumOwner').textContent = vehicle?.customer_name || (currentLang === 'ar' ? 'عميل' : 'Customer');
     document.getElementById('sumMileage').textContent = latest?.mileage ? `${latest.mileage} km` : '---';
     document.getElementById('sumVin').textContent = vehicle?.vin || '---';
-    document.getElementById('sumVisit's).textContent = services ? services.length : 0;
+    document.getElementById('sumVisits').textContent = services ? services.length : 0;
 
     const statusDiv = document.getElementById('sumStatus');
     if (latest && latest.next_service_date) {

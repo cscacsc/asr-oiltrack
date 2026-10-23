@@ -831,7 +831,8 @@
       <div class="form-grid">
         <div class="form-group">
           <label data-i18n="lblReg">Registreringsnummer *</label>
-          <input type="text" id="regNr" required placeholder="T.ex. OOB237" style="text-transform: uppercase;">
+          <input type="text" id="regNr" required placeholder="T.ex. OOB237" style="text-transform: uppercase;" oninput="handleRegAutoCheck()" onblur="handleRegAutoCheck(true)">
+          <div id="regCheckNotice" style="font-size: 11.5px; font-weight: 700; margin-top: 4px; display: none;"></div>
         </div>
         <div class="form-group">
           <label data-i18n="lblServiceDate">Servicedatum *</label>
@@ -1091,6 +1092,7 @@
   let cachedServices = [];
   let currentUser = null;
   let lastSearchedNotFoundReg = '';
+  let regCheckTimeout = null;
 
   const translations = {
     sv: {
@@ -1369,6 +1371,58 @@
       d.setFullYear(d.getFullYear() + 1);
       document.getElementById('nextDate').value = d.toISOString().substring(0, 10);
     }
+  }
+
+  // --- ميزة التعرف التلقائي الذكي على السيارة وتعبئة بياناتها السابقة فوراً ---
+  async function handleRegAutoCheck(force = false) {
+    const regInput = document.getElementById('regNr');
+    const notice = document.getElementById('regCheckNotice');
+    const reg = regInput.value.trim().toUpperCase();
+
+    if (!reg || (!force && reg.length < 5)) {
+      notice.style.display = 'none';
+      return;
+    }
+
+    clearTimeout(regCheckTimeout);
+    regCheckTimeout = setTimeout(async () => {
+      const { data: vehicle } = await supabaseClient
+        .from('vehicles')
+        .select('*')
+        .eq('reg_nr', reg)
+        .maybeSingle();
+
+      if (vehicle) {
+        if (!document.getElementById('carModel').value) document.getElementById('carModel').value = vehicle.model || '';
+        if (!document.getElementById('yearModel').value) document.getElementById('yearModel').value = vehicle.year_model || '';
+        if (!document.getElementById('vin').value) document.getElementById('vin').value = vehicle.vin || '';
+        if (!document.getElementById('custName').value) document.getElementById('custName').value = vehicle.customer_name || '';
+        if (!document.getElementById('custPhone').value) document.getElementById('custPhone').value = vehicle.customer_phone || '';
+
+        const { data: services } = await supabaseClient
+          .from('service_records')
+          .select('id, mileage, service_date')
+          .eq('reg_nr', reg)
+          .order('service_date', { ascending: false });
+
+        const count = services ? services.length : 0;
+        const lastKm = services && services.length > 0 ? services[0].mileage : null;
+
+        notice.style.display = 'block';
+        notice.style.color = '#34d399';
+        
+        const openLink = `<a href="javascript:void(0)" onclick="loadVehicleData('${reg}')" style="color: var(--accent-gold); text-decoration: underline; margin-left: 6px; margin-right: 6px;">[${currentLang === 'ar' ? 'عرض السجل' : 'Visa profil'}]</a>`;
+        if (currentLang === 'ar') {
+          notice.innerHTML = `✔ السيارة مسجلة مسبقاً (${count} صيانة مسجلة ${lastKm ? `- آخر عداد: ${lastKm} km` : ''}) ${openLink}`;
+        } else {
+          notice.innerHTML = `✔ Registrerat fordon (${count} tidigare service ${lastKm ? `- senaste mätare: ${lastKm} km` : ''}) ${openLink}`;
+        }
+      } else {
+        notice.style.display = 'block';
+        notice.style.color = '#94a3b8';
+        notice.textContent = currentLang === 'ar' ? '🆕 سيارة جديدة (غير مسجلة بالنظام)' : '🆕 Nytt fordon (ej tidigare registrerat)';
+      }
+    }, 350);
   }
 
   async function initAuth() {
@@ -1700,14 +1754,12 @@
           .limit(1);
 
         if (existingRecords && existingRecords.length > 0) {
-          // تصحيح وتحديث السجل القديم
           const { error: upErr } = await supabaseClient
             .from('service_records')
             .update(sPayload)
             .eq('id', existingRecords[0].id);
           if (!upErr) updatedCount++;
         } else {
-          // إضافة سجل جديد تماماً
           const { error: insErr } = await supabaseClient
             .from('service_records')
             .insert([sPayload]);
@@ -1869,7 +1921,7 @@
     document.getElementById('sumOwner').textContent = vehicle?.customer_name || (currentLang === 'ar' ? 'عميل' : 'Customer');
     document.getElementById('sumMileage').textContent = latest?.mileage ? `${latest.mileage} km` : '---';
     document.getElementById('sumVin').textContent = vehicle?.vin || '---';
-    document.getElementById('sumVisits').textContent = services ? services.length : 0;
+    document.getElementById('sumVisit's).textContent = services ? services.length : 0;
 
     const statusDiv = document.getElementById('sumStatus');
     if (latest && latest.next_service_date) {
@@ -2059,6 +2111,7 @@
     document.getElementById('serviceDate').value = today;
     document.getElementById('oilQty').value = '';
     document.getElementById('partsSource').value = 'workshop';
+    document.getElementById('regCheckNotice').style.display = 'none';
     handleServiceDateChange();
     
     const t = translations[currentLang];

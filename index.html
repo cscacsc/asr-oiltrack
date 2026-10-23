@@ -59,6 +59,7 @@
       display: flex;
       gap: 8px;
       align-items: center;
+      flex-wrap: wrap;
     }
     .auth-btn {
       background: rgba(56, 189, 248, 0.15);
@@ -81,6 +82,13 @@
       color: var(--accent-gold);
     }
     .btn-archive:hover { background: var(--accent-gold); color: #000; }
+
+    .btn-excel {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: #34d399;
+    }
+    .btn-excel:hover { background: var(--success); color: #fff; }
 
     header {
       text-align: center;
@@ -543,7 +551,6 @@
         display: block;
         margin-bottom: 8px;
         object-fit: contain;
-        /* فلتر طباعة يجعل الشعار أسود داكن وحاد على الورقة البيضاء */
         filter: brightness(0);
         -webkit-filter: brightness(0);
       }
@@ -674,6 +681,10 @@
       <button class="lang-btn" data-lang="ar" onclick="setLanguage('ar')" title="العربية">🇸🇦</button>
     </div>
     <div class="auth-btn-group">
+      <button id="btnExportData" class="auth-btn btn-excel" style="display: none;" onclick="exportAllDataToCSV()">📥 <span data-i18n="btnExport">Exportera Excel</span></button>
+      <button id="btnImportData" class="auth-btn btn-excel" style="display: none;" onclick="triggerImportCSV()">📤 <span data-i18n="btnImport">Importera Excel</span></button>
+      <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVImport(event)">
+
       <button id="btnAllRecords" class="auth-btn btn-archive" style="display: none;" onclick="toggleAllVehiclesView()">📋 <span data-i18n="btnAllRecords">Alla bilar & poster</span></button>
       <button id="authBtn" class="auth-btn" onclick="handleAuthAction()">🔒 <span id="authBtnText">Logga in (Mekaniker)</span></button>
     </div>
@@ -1143,6 +1154,8 @@
       btnAllRecords: "Alla bilar & poster",
       allVehiclesTitle: "📋 Alla registrerade bilar & protokoll",
       btnCloseArchive: "Stäng arkiv",
+      btnExport: "Exportera Excel",
+      btnImport: "Importera Excel",
       thAllReg: "Reg.nr",
       thAllCar: "Märke / Modell",
       thAllOwner: "Kund / Ägare",
@@ -1211,6 +1224,8 @@
       btnAllRecords: "All Vehicles & Records",
       allVehiclesTitle: "📋 All Registered Vehicles & Records",
       btnCloseArchive: "Close Archive",
+      btnExport: "Export Excel",
+      btnImport: "Import Excel",
       thAllReg: "Reg.nr",
       thAllCar: "Make / Model",
       thAllOwner: "Customer / Owner",
@@ -1279,6 +1294,8 @@
       btnAllRecords: "كل السيارات والسجلات",
       allVehiclesTitle: "📋 جميع السيارات المسجلة وسجلات الفحص",
       btnCloseArchive: "إغلاق الأرشيف",
+      btnExport: "تصدير نسخة إكسيل",
+      btnImport: "استيراد من إكسيل",
       thAllReg: "رقم اللوحة",
       thAllCar: "الموديل والماركة",
       thAllOwner: "اسم العميل",
@@ -1371,12 +1388,16 @@
     const adminSection = document.getElementById('adminSection');
     const adminActionRow = document.getElementById('adminActionRow');
     const btnAllRecords = document.getElementById('btnAllRecords');
+    const btnExportData = document.getElementById('btnExportData');
+    const btnImportData = document.getElementById('btnImportData');
 
     if (user) {
       authBtnText.textContent = "Logga ut (" + user.email.split('@')[0] + ")";
       adminSection.style.display = 'block';
       adminActionRow.style.display = 'grid';
       if (btnAllRecords) btnAllRecords.style.display = 'inline-flex';
+      if (btnExportData) btnExportData.style.display = 'inline-flex';
+      if (btnImportData) btnImportData.style.display = 'inline-flex';
       if (!document.getElementById('serviceDate').value) {
         const today = new Date().toISOString().substring(0, 10);
         document.getElementById('serviceDate').value = today;
@@ -1387,6 +1408,8 @@
       adminSection.style.display = 'none';
       adminActionRow.style.display = 'none';
       if (btnAllRecords) btnAllRecords.style.display = 'none';
+      if (btnExportData) btnExportData.style.display = 'none';
+      if (btnImportData) btnImportData.style.display = 'none';
       document.getElementById('allVehiclesCard').style.display = 'none';
       cancelEdit();
     }
@@ -1421,6 +1444,143 @@
       closeLoginModal();
       document.getElementById('loginPassword').value = '';
     }
+  }
+
+  // --- ميزة استيراد وتصدير إكسيل (Excel / CSV Backup) ---
+  async function exportAllDataToCSV() {
+    if (!currentUser) return;
+    
+    const { data: vehicles } = await supabaseClient.from('vehicles').select('*');
+    const { data: services } = await supabaseClient.from('service_records').select('*').order('service_date', { ascending: false });
+
+    if (!services || services.length === 0) {
+      alert("Det finns ingen data att exportera.");
+      return;
+    }
+
+    const vMap = {};
+    if (vehicles) {
+      vehicles.forEach(v => { vMap[v.reg_nr] = v; });
+    }
+
+    const headers = [
+      "RegNr", "Modell", "Arsmodell", "VIN", "Kundnamn", "Telefon",
+      "Servicedatum", "Matarstallning_km", "Motorolja", "Materialkalla",
+      "Oljefilter", "Luftfilter", "Kupefilter", "Branslefilter", "Tandstift",
+      "Nasta_Service_km", "Nasta_Service_datum", "Mekaniker", "Noteringar"
+    ];
+
+    const rows = services.map(s => {
+      const v = vMap[s.reg_nr] || {};
+      const isCust = s.notes && s.notes.includes('[KÄLLA: KUND]');
+      const cleanNotes = s.notes ? s.notes.replace(/\[KÄLLA: (KUND|VERKSTAD)\]/g, '').trim() : '';
+
+      return [
+        `"${s.reg_nr || ''}"`,
+        `"${(v.model || '').replace(/"/g, '""')}"`,
+        `"${v.year_model || ''}"`,
+        `"${v.vin || ''}"`,
+        `"${(v.customer_name || '').replace(/"/g, '""')}"`,
+        `"${v.customer_phone || ''}"`,
+        `"${s.service_date ? s.service_date.substring(0, 10) : ''}"`,
+        `"${s.mileage || ''}"`,
+        `"${(s.oil_brand_type || '').replace(/"/g, '""')}"`,
+        `"${isCust ? 'Kunden' : 'Verkstaden'}"`,
+        `"${s.oil_filter ? 'JA' : 'NEJ'}"`,
+        `"${s.air_filter ? 'JA' : 'NEJ'}"`,
+        `"${s.cabin_filter ? 'JA' : 'NEJ'}"`,
+        `"${s.fuel_filter ? 'JA' : 'NEJ'}"`,
+        `"${s.spark_plugs ? 'JA' : 'NEJ'}"`,
+        `"${s.next_service_mileage || ''}"`,
+        `"${s.next_service_date || ''}"`,
+        `"${(s.mechanic || '').replace(/"/g, '""')}"`,
+        `"${cleanNotes.replace(/"/g, '""')}"`
+      ].join(';');
+    });
+
+    const csvContent = '\uFEFF' + headers.join(';') + '\r\n' + rows.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `ASR_Servicebok_Backup_${new Date().toISOString().substring(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function triggerImportCSV() {
+    document.getElementById('csvFileInput').click();
+  }
+
+  async function handleCSVImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const text = e.target.result;
+      const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+      if (lines.length < 2) {
+        alert("Filen är tom eller saknar rader.");
+        return;
+      }
+
+      const delimiter = lines[0].includes(';') ? ';' : ',';
+      const headers = lines[0].split(delimiter).map(h => h.replace(/"/g, '').trim().toLowerCase());
+
+      let importedCount = 0;
+
+      for (let i = 1; i < lines.length; i++) {
+        const rawCols = lines[i].split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
+        const row = {};
+        headers.forEach((h, idx) => { row[h] = rawCols[idx] || ''; });
+
+        const regNr = (row.regnr || row.reg_nr || row['registreringsnummer'] || '').toUpperCase();
+        if (!regNr) continue;
+
+        // تحديث أو إدخال ملف السيارة
+        const vPayload = {
+          reg_nr: regNr,
+          model: row.modell || row.model || '',
+          year_model: row.arsmodell || row.year_model || '',
+          vin: row.vin || row.chassinummer || '',
+          customer_name: row.kundnamn || row.customer_name || '',
+          customer_phone: row.telefon || row.customer_phone || ''
+        };
+        await supabaseClient.from('vehicles').upsert(vPayload, { onConflict: 'reg_nr' });
+
+        // إدخال سجل الصيانة
+        const isCust = (row.materialkalla || '').toLowerCase().includes('kund');
+        const notesRaw = row.noteringar || row.notes || '';
+        const sourceTag = isCust ? '[KÄLLA: KUND]' : '[KÄLLA: VERKSTAD]';
+        const finalNotes = `${sourceTag} ${notesRaw}`.trim();
+
+        const sPayload = {
+          reg_nr: regNr,
+          service_date: row.servicedatum || row.service_date || new Date().toISOString().substring(0, 10),
+          mileage: parseInt(row.matarstallning_km || row.mileage) || 0,
+          oil_brand_type: row.motorolja || row.oil_brand_type || '',
+          oil_filter: ['ja', 'true', '1'].includes((row.oljefilter || '').toLowerCase()),
+          air_filter: ['ja', 'true', '1'].includes((row.luftfilter || '').toLowerCase()),
+          cabin_filter: ['ja', 'true', '1'].includes((row.kupefilter || '').toLowerCase()),
+          fuel_filter: ['ja', 'true', '1'].includes((row.branslefilter || '').toLowerCase()),
+          spark_plugs: ['ja', 'true', '1'].includes((row.tandstift || '').toLowerCase()),
+          next_service_mileage: parseInt(row.nasta_service_km || row.next_service_mileage) || null,
+          next_service_date: row.nasta_service_datum || row.next_service_date || null,
+          mechanic: row.mekaniker || row.mechanic || 'ASR Bilservice',
+          notes: finalNotes
+        };
+
+        const { error } = await supabaseClient.from('service_records').insert([sPayload]);
+        if (!error) importedCount++;
+      }
+
+      alert(`Import slutförd! ${importedCount} serviceposter har importerats.`);
+      event.target.value = '';
+      if (currentReg) loadVehicleData(currentReg);
+    };
+    reader.readAsText(file, "UTF-8");
   }
 
   async function toggleAllVehiclesView() {
